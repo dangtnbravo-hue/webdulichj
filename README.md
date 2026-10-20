@@ -53,3 +53,7 @@ Trong mục Việt Nam có hai lớp: **34 tỉnh/thành sau sắp xếp 2025** 
 Chọn hoặc bấm một tỉnh để xem các địa điểm đã ghi nhận trong phạm vi đó; ví dụ vùng Ninh Bình sau sắp xếp chứa ba tên Ninh Bình, Hà Nam và Nam Định. Ranh giới được tải từ `public/maps` khi mở bản đồ Việt Nam; không dùng API key và không cần chạy SQL. Nếu tệp lỗi, bản đồ nền và 20 ghim vẫn hoạt động, có nút thử tải lại.
 
 Hai bộ dữ liệu minh họa được dẫn xuất từ Natural Earth public domain. Helper `scripts/build-vietnam-provinces.py` tạo dữ liệu từ `ne_10m_admin_1_states_provinces.geojson`, cần Shapely 2.x khi chạy lại (không phải dependency website). Helper kiểm tra 63 mã cũ được phân vào đúng 34 nhóm, không trùng/lọt đơn vị, và bảo toàn diện tích hợp; màu được chọn để phân biệt các vùng kề nhau. Tài sản GeoJSON đã được commit, Vercel không cần Python hay Shapely.
+
+## Nền tương tác theo con trỏ
+
+Quầng sáng xanh dương/xanh lá theo chuột trên các mảng nền ngoài; lớp trang trí không nhận thao tác và nằm dưới nội dung, không phủ lên bản đồ hay biểu mẫu. Chỉ cập nhật theo khung hình khi chuột di chuyển, không chạy vòng lặp thường trực. Tự tắt trên thiết bị cảm ứng và khi bật giảm chuyển động; cũng áp dụng cho nhật ký mới được thay vào sau đăng nhập.
