@@ -1,3 +1,4 @@
+import { vietnamPlaces } from './vietnam-places.js';
 import { visitedPlaces } from './visited-places.js';
 import { createVietnamMap } from './vietnam-map.js';
 import L from 'leaflet';
@@ -81,15 +82,15 @@ function showCountry(code,fly=true) {
 function refresh() {
   const domestic=region==='vietnam';
   const foreign=foreignCodes();
-  document.querySelector('#map-country-count').textContent=domestic?vietnamMemories:foreign.length;
-  document.querySelector('#map-count-label').textContent=domestic?'kỷ niệm ở Việt Nam':'nước ngoài đã đến';
+  document.querySelector('#map-country-count').textContent=domestic?vietnamPlaces.length:foreign.length;
+  document.querySelector('#map-count-label').textContent=domestic?'địa điểm Việt Nam đã đến':'nước ngoài đã đến';
   document.querySelector('#map-country-select').disabled=!ready;
   document.querySelector('#map-country-form button').disabled=!ready;
   document.querySelector('#vietnam-write-memory').disabled=!ready||!canEdit;
   document.querySelector('#vietnam-write-memory').hidden=!domestic||!canEdit;
   const status=document.querySelector('#map-status');
   if(!ready)status.textContent='Đang mở nhật ký trên trình duyệt này…';
-  else if(domestic)status.textContent=visited.has('VN')?`Việt Nam đã có dấu chân · ${vietnamMemories} kỷ niệm được lưu.`:'Chưa ghi dấu Việt Nam. Bấm bản đồ để đánh dấu hoặc viết chuyến đi đầu tiên.';
+  else if(domestic)status.textContent=`${vietnamPlaces.length} địa điểm đã ghé · ${vietnamMemories} kỷ niệm được lưu. Bấm cụm ghim để phóng to hoặc chọn tên địa điểm.`;
   else status.textContent=foreign.length?`${foreign.length} nước ngoài đã ghé. Chạm ghim để khui chuyện.`:'Chưa có dấu chân quốc tế. Chọn một nước đã đến để ghim kỷ niệm nhé.';
   countryLayer.setStyle(countryStyle);markers.clearLayers();
   foreign.forEach(code=>{if(!locations[code])return;const marker=L.marker(locations[code].latlng,{icon:markerIcon,title:`${names.of(code)} — đã đến`,alt:`${names.of(code)} — đã đến`,keyboard:true}).addTo(markers);marker.on('click',()=>showCountry(code,false));});
@@ -135,13 +136,14 @@ function setRegion(nextRegion) {
   document.querySelector('#map-country-form').hidden=domestic;
   document.querySelector('#vietnam-write-memory').hidden=!domestic||!canEdit;
   document.querySelector('#vietnam-stage').hidden=!domestic;
+  document.querySelector('#vietnam-place-directory').hidden=!domestic;
   document.querySelector('#globe-country-panel').hidden=true;
   document.querySelector('#map-reset').textContent=domestic?'Toàn Việt Nam':'Toàn thế giới';
-  document.querySelector('#map-location-note').textContent=domestic?'Địa danh tham khảo để định hướng · Không phải danh sách đã đến':'Màu vàng & ghim ✓: đã đến · Vị trí đại diện quốc gia';
-  document.querySelector('#map-help-text').textContent=domestic?'Nhật ký Việt Nam dành cho những chuyến đi trong nước. Bản đồ không tự đánh dấu tỉnh, thành bạn chưa xác nhận.':'Chọn một nước ngoài để đánh dấu đã đến. Danh sách quốc tế không tính Việt Nam; dữ liệu lấy từ nhật ký trên trình duyệt này.';
+  document.querySelector('#map-location-note').textContent=domestic?'Ghim đã đến theo tên bạn cung cấp · Vị trí đại diện địa danh':'Màu vàng & ghim ✓: đã đến · Vị trí đại diện quốc gia';
+  document.querySelector('#map-help-text').textContent=domestic?'Đôn đã ghé 20 nơi ở Việt Nam. Chọn tên bên dưới để tìm ghim; địa danh giữ theo tên bạn cung cấp, không phải danh sách đơn vị hành chính hiện hành.':'Chọn một nước ngoài để đánh dấu đã đến. Danh sách quốc tế không tính Việt Nam; dữ liệu lấy từ nhật ký trên trình duyệt này.';
   if(domestic) {
     document.querySelector('#globe-stage').hidden=true;document.querySelector('#world-map').hidden=true;globe?.activate(false);
-    if(!vietnamMap)vietnamMap=createVietnamMap(document.querySelector('#vietnam-map'),{onCountry:()=>showCountry('VN',false)});
+    if(!vietnamMap)vietnamMap=createVietnamMap(document.querySelector('#vietnam-map'),{onCountry:()=>showCountry('VN',false),onPlace:()=>{selectedCode=null;}});
     vietnamMap.activate();document.querySelector('#vietnam-map-loading').hidden=true;
   } else switchView(internationalView);
   refresh();
@@ -161,12 +163,13 @@ export function mountWorldMap() {
   document.querySelector('#vietnam-map-journal').addEventListener('click',()=>openJournal('VN'));
   document.querySelector('#vietnam-write-memory').addEventListener('click',()=>window.dispatchEvent(new Event('map:write-vietnam')));
   document.querySelectorAll('[data-map-region]').forEach(control=>control.addEventListener('click',()=>setRegion(control.dataset.mapRegion)));
+  document.querySelectorAll('[data-vietnam-place]').forEach(button=>button.addEventListener('click',()=>{if(region!=='vietnam')setRegion('vietnam');vietnamMap.focusPlace(button.dataset.vietnamPlace);}));
   document.querySelector('#show-globe').addEventListener('click',()=>switchView('globe'));
   document.querySelector('#show-flat-map').addEventListener('click',()=>switchView('flat'));
   document.querySelector('#globe-zoom-in').addEventListener('click',()=>globe?.zoom(.8));document.querySelector('#globe-zoom-out').addEventListener('click',()=>globe?.zoom(1.25));
   document.querySelector('#globe-rotate').addEventListener('click',event=>{const rotating=globe?.rotate()||false;event.currentTarget.setAttribute('aria-pressed',String(rotating));event.currentTarget.textContent=rotating?'Dừng xoay':'Tự xoay';});
   document.querySelector('.globe-panel-close').addEventListener('click',()=>{document.querySelector('#globe-country-panel').hidden=true;selectedCode=null;});
-  window.addEventListener('journal:updated',event=>{visited=new Set(event.detail.countries);ready=event.detail.ready;canEdit=Boolean(event.detail.canEdit);vietnamMemories=event.detail.vietnamMemories||0;refresh();});
+  window.addEventListener('journal:updated',event=>{visited=new Set(event.detail.countries);if(vietnamPlaces.length)visited.add('VN');ready=event.detail.ready;canEdit=Boolean(event.detail.canEdit);vietnamMemories=event.detail.vietnamMemories||0;refresh();});
   window.addEventListener('journal:save-error',()=>{if(selectedCode)showCountry(selectedCode,false);document.querySelector('#map-status').textContent='Chưa lưu được dấu chân. Kiểm tra quyền hoặc dung lượng lưu trữ trong nhật ký.';});
   new ResizeObserver(()=>map.invalidateSize({pan:false})).observe(document.querySelector('#world-map'));
   setRegion('international');

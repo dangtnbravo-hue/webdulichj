@@ -20,7 +20,7 @@ npm run preview
 ## Hai khu vực
 
 - **Quốc tế:** địa cầu 3D 360°, ảnh Trái Đất, tô vàng các nước đã đến, ghim có tên nước và điểm đã ghé. Có bản đồ phẳng nhiều màu, tự dự phòng khi không có WebGL2.
-- **Việt Nam:** bản đồ riêng với đường bờ biển Natural Earth 1:10m. Nhãn địa danh chỉ để định hướng; không tự tính tỉnh/thành đã đến. Bộ đếm là số kỷ niệm Việt Nam, không làm tăng số nước ngoài.
+- **Việt Nam:** bản đồ riêng với đường bờ biển Natural Earth 1:10m. Có 20 địa điểm đã đến do tác giả cung cấp, ghim và cụm ghim có thể bấm để khám phá. Bộ đếm Việt Nam tính địa điểm trong danh sách này, không làm tăng số nước ngoài. Các nhãn nền trung tính chỉ để định hướng.
 
 Danh sách ban đầu trong `src/visited-places.js`: Indonesia — Jakarta; Malaysia — Kuala Lumpur; Campuchia — Phnom Penh, Siem Reap; Singapore; Thái Lan; Nhật Bản — Tokyo, Fuji; Trung Quốc — Lệ Giang. Tổng cộng 7 nước ngoài. Không tự tạo ngày đi, ảnh hoặc trải nghiệm thực tế.
 
@@ -39,3 +39,9 @@ Bản nháp giữ trên trình duyệt. **Đăng nhật ký công khai** đưa t
 ## Triển khai
 
 Vercel nối `dangtnbravo-hue/webdulichj`, nhánh `main`, framework Vite, build `npm run build`, output `dist`. Hai biến trong `.env.example` là URL và publishable key công khai. **Không đưa secret/service_role key hay mật khẩu vào GitHub hoặc biến VITE_.** Sau khi đổi biến môi trường cần Redeploy.
+
+## 20 dấu chân Việt Nam
+
+Danh sách trong `src/vietnam-places.js`: Ninh Bình, Mộc Châu, Quảng Ninh, Hải Phòng, Bắc Ninh, Bắc Giang, Nghệ An, Hải Dương, Thái Bình, Quảng Trị, Quảng Bình, Đà Nẵng, Hồ Chí Minh, Vĩnh Phúc, Hưng Yên, Hà Nam, Nam Định, Tuyên Quang, Hòa Bình, Hà Tĩnh. Giữ nguyên tên địa phương quen thuộc do tác giả cung cấp, không diễn giải thành danh sách đơn vị hành chính hiện hành. Mỗi địa danh có một tọa độ đại diện, không phải GPS hay địa chỉ ghé thăm cụ thể. Không tự tạo ảnh, ngày đi hoặc nội dung kỷ niệm.
+
+Bấm cụm số để tách các ghim gần nhau khi phóng to; dùng danh sách 20 nút bên dưới bản đồ để tìm từng nơi bằng chuột hoặc bàn phím. Thông tin này nằm trong mã website nên khách cũng thấy ngay sau triển khai, không phải chạy lại SQL hoặc ghi đè bài đã đăng. Các bài viết/ảnh trên Supabase được giữ nguyên. Việt Nam có bộ đếm 20 địa điểm riêng; Quốc tế vẫn tính 7 nước đã đến.
