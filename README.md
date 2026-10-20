@@ -46,3 +46,14 @@ Ghim nằm tại tọa độ đại diện của quốc gia, không phải vị 
 Đưa website lên Vercel có thể dùng tên miền phụ miễn phí `.vercel.app`; chưa cần mua tên miền riêng. Việc xuất bản giao diện không biến nhật ký trên trình duyệt thành dữ liệu công khai. Cần bổ sung lưu trữ trực tuyến và quyền tác giả để khách truy cập xem cùng ảnh/bài viết/bản đồ của chủ website.
 
 Danh sách do tác giả cung cấp (20/10/2026) nằm trong `src/visited-places.js`: Indonesia — Jakarta; Malaysia — Kuala Lumpur; Campuchia — Phnom Penh, Siem Reap; Singapore; Thái Lan; Nhật Bản — Tokyo, Fuji; Trung Quốc — Lệ Giang. Tổng cộng **7 nước ngoài**. Thành phố hiển thị trong popup và danh sách dấu chân; ghim vẫn đại diện quốc gia. Không tự tạo ảnh, ngày đi hay bài kỷ niệm. Khi mở lần đầu sau cập nhật, danh sách được gộp một lần vào nhật ký hiện có và không nhân đôi; các lần bỏ đánh dấu sau đó được giữ nguyên. Đây là danh sách mặc định trong mã nguồn công khai, không phải đồng bộ ảnh/bài cá nhân lên máy chủ.
+
+## Địa cầu 3D xoay 360°
+
+Mặc định phần đầu trang hiển thị địa cầu WebGL với ảnh bề mặt Trái Đất, khí quyển, đường biên nhiều màu. Quốc gia đã đến được tô vàng và gắn ghim tick, dùng cùng dữ liệu nhật ký với bản đồ phẳng. Ảnh bề mặt lưu cùng website, là ảnh tĩnh minh họa, không phải ảnh vệ tinh trực tiếp.
+
+- Kéo chuột/ngón tay để xoay; dùng `+` / `−` để phóng to/thu nhỏ. Nút **Tự xoay** bật/tắt xoay tự động (mặc định tắt).
+- Bấm quốc gia/ghim hoặc chọn tên nước để xem các điểm đã ghé và mở nhật ký.
+- Nút **Bản đồ 2D** chuyển sang bản đồ phẳng nhiều màu. Thiết bị không có WebGL2 sẽ tự chuyển sang 2D, vẫn dùng được danh sách quốc gia và thao tác đánh dấu.
+- 3D được tải theo mô-đun riêng. Vòng dựng hình được tạm dừng khi khu vực địa cầu ở ngoài màn hình, tab bị ẩn hoặc chuyển sang 2D. Hiệu ứng tỏa vòng bị tắt với tùy chọn giảm chuyển động; ghim và bộ đếm vẫn giữ nguyên.
+
+Địa cầu và hình ảnh có thể tải chậm hơn bản đồ phẳng trên máy yếu; có thể chủ động dùng 2D. Xem `THIRD_PARTY_NOTICES.md` cho nguồn dữ liệu/ảnh và giấy phép.
