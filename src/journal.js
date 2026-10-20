@@ -1,3 +1,4 @@
+import { visitedPlaces, visitedPlacesVersion } from './visited-places.js';
 const codes = 'AF AL DZ AD AO AG AR AM AU AT AZ BS BH BD BB BY BE BZ BJ BT BO BA BW BR BN BG BF BI CV KH CM CA CF TD CL CN CO KM CG CD CR CI HR CU CY CZ DK DJ DM DO EC EG SV GQ ER EE SZ ET FJ FI FR GA GM GE DE GH GR GD GT GN GW GY HT HN HU IS IN ID IR IQ IE IL IT JM JP JO KZ KE KI KP KR KW KG LA LV LB LS LR LY LI LT LU MG MW MY MV ML MT MH MR MU MX FM MD MC MN ME MA MZ MM NA NR NP NL NZ NI NE NG MK NO OM PK PW PS PA PG PY PE PH PL PT QA RO RU RW KN LC VC WS SM ST SA SN RS SC SL SG SK SI SB SO ZA SS ES LK SD SR SE CH SY TJ TZ TH TL TG TO TT TN TR TM TV UG UA AE GB US UY UZ VU VA VE VN YE ZM ZW'.split(' ');
 const names = new Intl.DisplayNames(['vi'], { type: 'region' });
 const countries = codes.map(code => ({ code, name: names.of(code) })).sort((a,b) => a.name.localeCompare(b.name,'vi'));
@@ -29,11 +30,12 @@ function loadState() {
     request.onerror = () => reject(request.error);
   });
 }
-function persist(next) {
+function persist(next, seedKey) {
   if(new Blob([JSON.stringify(next)]).size > 45*1024*1024) return Promise.reject(new Error('Kho nhật ký tối đa 45 MB. Sao lưu rồi xóa bớt ảnh trước khi lưu thêm.'));
   return new Promise((resolve,reject) => {
     const transaction = database.transaction('journal', 'readwrite');
     transaction.objectStore('journal').put(next, 'state');
+    if(seedKey) transaction.objectStore('journal').put(true, seedKey);
     transaction.oncomplete = () => { state = next; render(); resolve(); };
     transaction.onerror = () => reject(transaction.error);
     transaction.onabort = () => reject(transaction.error || new Error('Không thể lưu.'));
@@ -69,7 +71,7 @@ function render() {
   countrySelect.value = inGroup(selectedCountry) && codes.includes(selectedCountry) ? selectedCountry : journalGroup === 'vietnam' ? 'VN' : 'JP';
   document.querySelector('#memory-count').textContent = state.memories.length;
   document.querySelector('#photo-count').textContent = state.memories.reduce((n,m) => n+m.photos.length,0);
-  document.querySelector('#visited-countries').innerHTML = visited.length ? visited.map(code => `<span class="country-chip"><span>${escapeHTML(countryName(code))}</span><button data-remove-country="${code}" aria-label="Bỏ đánh dấu ${escapeHTML(countryName(code))}">×</button></span>`).join('') : '<p class="journal-empty-small">Chưa có dấu chân trong nhóm này. Thêm điểm đến đầu tiên của bạn.</p>';
+  document.querySelector('#visited-countries').innerHTML = visited.length ? visited.map(code => `<span class="country-chip"><span>${escapeHTML(countryName(code))}${visitedPlaces[code]?.length ? ` · ${escapeHTML(visitedPlaces[code].join(', '))}` : ''}</span><button data-remove-country="${code}" aria-label="Bỏ đánh dấu ${escapeHTML(countryName(code))}">×</button></span>`).join('') : '<p class="journal-empty-small">Chưa có dấu chân trong nhóm này. Thêm điểm đến đầu tiên của bạn.</p>';
   document.querySelector('#memory-grid').innerHTML = memories.length ? memories.map(m => `<article class="memory-card">${m.photos[0] ? `<button class="memory-cover" data-view-memory="${m.id}" aria-label="Xem ${escapeHTML(m.title)}"><img src="${m.photos[0]}" alt="Ảnh kỷ niệm: ${escapeHTML(m.title)}" loading="lazy"><span>${m.photos.length} ảnh</span></button>` : '<div class="memory-no-photo">MỘT CHUYẾN ĐI, MỘT CÂU CHUYỆN</div>'}<div class="memory-card-body"><p class="memory-meta">${escapeHTML(countryName(m.country))}${m.date ? ` · ${escapeHTML(new Date(`${m.date}T12:00:00`).toLocaleDateString('vi-VN'))}` : ''}</p><h3><button data-view-memory="${m.id}">${escapeHTML(m.title)}</button></h3><p class="memory-excerpt">${escapeHTML(m.story || m.tips || 'Một dấu chân mới trong hành trình của bạn.')}</p><div class="memory-actions"><button data-edit-memory="${m.id}">Chỉnh sửa</button><button data-share-memory="${m.id}">Xuất để chia sẻ ↗</button><button data-delete-memory="${m.id}" class="delete-memory">Xóa</button></div></div></article>`).join('') : '<div class="journal-empty"><span>✧</span><h3>Nhóm này đang chờ câu chuyện của bạn.</h3><p>Thêm ảnh, ghi lại một kỷ niệm, chia sẻ điều bạn đã học được trên đường.</p><button class="button blue" id="empty-add-memory">Viết kỷ niệm đầu tiên +</button></div>';
   document.querySelector('#empty-add-memory')?.addEventListener('click', () => openEditor());
 }
@@ -123,7 +125,20 @@ export async function mountJournal() {
   document.querySelector('#about').before(section);
   document.body.insertAdjacentHTML('beforeend', `<dialog id="memory-dialog" aria-labelledby="memory-editor-heading"><button class="dialog-close" type="button" aria-label="Đóng biểu mẫu">×</button><form id="memory-form"><p class="eyebrow">MỘT MẢNH KÝ ỨC MỚI</p><h2 id="memory-editor-heading">Giữ lại một chuyến đi</h2><label>Tên kỷ niệm<input name="title" required maxlength="120" placeholder="Ngày đầu tiên ở Nhật Bản…"></label><div class="memory-form-row"><label>Quốc gia<select name="country" required>${options}</select></label><label>Ngày chuyến đi<input name="date" type="date"></label></div><label>Kỷ niệm của bạn<textarea name="story" rows="5" maxlength="20000" placeholder="Điều gì khiến bạn nhớ nhất về chuyến đi này?"></textarea></label><label>Kinh nghiệm muốn chia sẻ<textarea name="tips" rows="4" maxlength="10000" placeholder="Đi lại, chỗ ở, món ngon, những điều nên chuẩn bị…"></textarea></label><label>Ảnh kỷ niệm<input name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label><p class="photo-help">Tối đa 12 ảnh mỗi kỷ niệm, mỗi ảnh tối đa 15 MB. Hỗ trợ JPG, PNG, WebP. Ảnh được thu nhỏ tối đa 1600 px để tiết kiệm dung lượng.</p><div id="retained-photos"></div><p id="memory-save-status" role="status"></p><button class="button blue" type="submit">Lưu kỷ niệm</button></form></dialog><dialog id="memory-view" aria-label="Chi tiết kỷ niệm"><button class="dialog-close" type="button" aria-label="Đóng kỷ niệm">×</button><div class="memory-view-body"></div></dialog>`);
   render(); setBusy(true);
-  try { database = await openDatabase(); const stored = await loadState(); if(stored) state = validState(stored); render(); setBusy(false); }
+  try {
+    database = await openDatabase();
+    const stored = await loadState();
+    if(stored) state = validState(stored);
+    const seeded = await new Promise((resolve,reject) => {
+      const request = database.transaction('journal','readonly').objectStore('journal').get(visitedPlacesVersion);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    // Merge once: preserve personal entries, avoid duplicates, and respect later removals.
+    if(!seeded) await persist({...state,countries:[...new Set([...state.countries,...Object.keys(visitedPlaces)])]},visitedPlacesVersion);
+    journalGroup = 'abroad';
+    render(); setBusy(false);
+  }
   catch { announce('Không mở được kho lưu trữ. Hãy bật quyền lưu trữ, kiểm tra chế độ riêng tư hoặc thử trình duyệt khác. Nhật ký hiện chưa sẵn sàng.'); return; }
   document.querySelectorAll('[data-journal-group]').forEach(button => button.addEventListener('click', () => { journalGroup = button.dataset.journalGroup; render(); }));
   window.addEventListener('map:show-journal', event => {

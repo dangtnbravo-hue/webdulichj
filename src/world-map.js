@@ -1,3 +1,4 @@
+import { visitedPlaces } from './visited-places.js';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { feature } from 'topojson-client';
@@ -44,6 +45,7 @@ function popup(code) {
   const title = document.createElement('strong'); title.textContent=names.of(code); box.append(title);
   const status = document.createElement('p'); status.textContent=visited.has(code)?'✓ Đã có trong hành trình của bạn':'Một vùng đất đang chờ bạn khám phá.'; box.append(status);
   if(visited.has(code)) {
+    if(visitedPlaces[code]?.length) { const places=document.createElement('p'); places.className='visited-city-list'; places.textContent=`Điểm đã ghé: ${visitedPlaces[code].join(' · ')}`; box.append(places); }
     const link=document.createElement('a'); link.href='#my-journal'; link.textContent='Xem nhật ký của tôi ↗'; link.addEventListener('click',()=>{window.dispatchEvent(new CustomEvent('map:show-journal',{detail:{code}}));map.closePopup();}); box.append(link);
   } else {
     const button=document.createElement('button'); button.type='button'; button.textContent='Đánh dấu đã đến +'; button.disabled=!ready;
