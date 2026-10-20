@@ -11,6 +11,61 @@ export function createVietnamMap(container,{onCountry,onPlace}) {
     L.circleMarker([lat,lng],{radius:3,color:'#47788d',weight:1,fillColor:'white',fillOpacity:1,interactive:false}).addTo(map);
     L.marker([lat,lng],{icon:L.divIcon({className:'vietnam-city-label reference-city',html:name,iconSize:[120,20],iconAnchor:[-7,10]}),interactive:false,keyboard:false}).addTo(map);
   });
+  const provincePalette=['#73bce8','#78c9ad','#b6a3e5','#f1ba8a','#e8a0b9','#b0ce80','#83cbd6','#e7ce80'];
+  const provinceCache=new Map();
+  let provinces;
+  let activeMode;
+  let requestId=0;
+  let selectedProvince;
+  const modeSelect=document.querySelector('#vietnam-boundary-mode');
+  const provinceSearch=document.querySelector('#vietnam-province-search');
+  const provinceStatus=document.querySelector('#vietnam-province-status');
+  const retry=document.querySelector('#vietnam-province-retry');
+  const placesIn=feature=>vietnamPlaces.filter(place=>feature.properties.members.includes(place.provinceCode));
+  function provinceStyle(feature){return {className:'vietnam-province-shape',color:'#fff',weight:1,fillColor:provincePalette[feature.properties.colorIndex],fillOpacity:.9};}
+  function selectProvince(layer,zoom=false,position){
+    map.closePopup();selectedPlace=null;selectedLayer.clearLayers();onPlace?.();
+    selectedProvince=layer;layer.setStyle({color:'#225c79',weight:2.5,fillOpacity:1});layer.bringToFront();
+    if(zoom)map.fitBounds(layer.getBounds(),{padding:[45,45],maxZoom:8,animate:false});
+    const feature=layer.feature;
+    provinceSearch.value=feature.properties.id;
+    const box=document.createElement('div');box.className='country-map-popup province-popup';
+    const title=document.createElement('strong');title.textContent=feature.properties.name;box.append(title);
+    const era=document.createElement('small');era.textContent=activeMode==='34'?'Phạm vi minh họa sau sắp xếp 2025':'Phạm vi trước năm 2025';box.append(era);
+    const matches=placesIn(feature);
+    const description=document.createElement('p');description.textContent=matches.length?`Đôn đã ghé ${matches.length} địa điểm trong khu vực này:`:'Chưa có địa điểm được Đôn ghi nhận trong khu vực này.';box.append(description);
+    for(const place of matches){const button=document.createElement('button');button.type='button';button.textContent=`✓ ${place.name}`;button.addEventListener('click',()=>showPlace(place,true));box.append(button);}
+    L.popup({maxWidth:255}).setLatLng(position||layer.getBounds().getCenter()).setContent(box).openOn(map);
+  }
+  async function loadProvinces(mode){
+    const current=++requestId;
+    provinceSearch.disabled=true;retry.hidden=true;provinceStatus.textContent='Đang tô màu từng tỉnh/thành…';
+    try {
+      let collection=provinceCache.get(mode);
+      if(!collection){const response=await fetch(`/maps/vietnam-provinces-${mode}.geojson`);if(!response.ok)throw new Error('Boundary unavailable');collection=await response.json();if(collection.type!=='FeatureCollection'||collection.features.length!==Number(mode))throw new Error('Invalid boundary set');provinceCache.set(mode,collection);}
+      if(current!==requestId)return;
+      map.closePopup();if(provinces)provinces.remove();activeMode=mode;
+      provinces=L.geoJSON(collection,{style:provinceStyle,onEachFeature(feature,layer){
+        const tooltip=document.createElement('span');tooltip.textContent=feature.properties.name;
+        layer.bindTooltip(tooltip,{sticky:true,className:'vietnam-province-tooltip'});
+        layer.on('mouseover',()=>{if(layer!==selectedProvince)layer.setStyle({weight:2,color:'#4887a0'});});
+        layer.on('mouseout',()=>{if(layer!==selectedProvince)provinces.resetStyle(layer);});
+        layer.on('click',event=>selectProvince(layer,false,event.latlng));
+      }}).addTo(map);
+      provinceSearch.replaceChildren();const prompt=document.createElement('option');prompt.value='';prompt.textContent='Chọn một tỉnh/thành để xem';provinceSearch.append(prompt);
+      [...collection.features].sort((a,b)=>a.properties.name.localeCompare(b.properties.name,'vi')).forEach(feature=>{const option=document.createElement('option');option.value=feature.properties.id;option.textContent=feature.properties.name;provinceSearch.append(option);});
+      provinceSearch.disabled=false;
+      provinceStatus.textContent=`${mode} khu vực · Màu nền phân biệt tỉnh/thành, ghim vàng là nơi đã đến.`;
+    } catch {
+      if(current!==requestId)return;
+      if(activeMode){modeSelect.value=activeMode;provinceSearch.disabled=false;}
+      provinceStatus.textContent='Chưa tải được ranh giới tỉnh/thành. Bản đồ nền và 20 ghim vẫn dùng được.';retry.hidden=false;
+    }
+  }
+  modeSelect.addEventListener('change',()=>loadProvinces(modeSelect.value));
+  provinceSearch.addEventListener('change',()=>{if(!provinceSearch.value||!provinces)return;const layer=provinces.getLayers().find(layer=>layer.feature.properties.id===provinceSearch.value);if(layer)selectProvince(layer,true);});
+  retry.addEventListener('click',()=>loadProvinces(modeSelect.value));
+  loadProvinces(modeSelect.value);
   const pinLayer=L.layerGroup().addTo(map);
   const selectedLayer=L.layerGroup().addTo(map);
   let selectedPlace;
@@ -50,9 +105,9 @@ export function createVietnamMap(container,{onCountry,onPlace}) {
       }
     }
   }
-  function focus(){map.invalidateSize({pan:false});map.fitBounds(outline.getBounds(),{paddingTopLeft:[25,container.clientWidth<760?175:25],paddingBottomRight:[60,35],animate:false});renderPins();}
+  function focus(){map.invalidateSize({pan:false});map.fitBounds(outline.getBounds(),{paddingTopLeft:[25,container.clientWidth<760?215:25],paddingBottomRight:[60,35],animate:false});renderPins();}
   map.on('zoomend moveend',renderPins);
-  map.on('popupclose',()=>{selectedPlace=null;selectedLayer.clearLayers();});
+  map.on('popupclose',()=>{selectedPlace=null;selectedLayer.clearLayers();if(selectedProvince){provinces?.resetStyle(selectedProvince);selectedProvince=null;}});
   const observer=new ResizeObserver(()=>{if(container.clientWidth){if(selectedPlace){map.invalidateSize({pan:false});renderPins();}else focus();}});observer.observe(container);
   map.zoomControl._zoomInButton.setAttribute('aria-label','Phóng to bản đồ Việt Nam');map.zoomControl._zoomOutButton.setAttribute('aria-label','Thu nhỏ bản đồ Việt Nam');
   return {

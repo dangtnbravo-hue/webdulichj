@@ -137,6 +137,7 @@ function setRegion(nextRegion) {
   document.querySelector('#vietnam-write-memory').hidden=!domestic||!canEdit;
   document.querySelector('#vietnam-stage').hidden=!domestic;
   document.querySelector('#vietnam-place-directory').hidden=!domestic;
+  document.querySelector('#vietnam-province-controls').hidden=!domestic;
   document.querySelector('#globe-country-panel').hidden=true;
   document.querySelector('#map-reset').textContent=domestic?'Toàn Việt Nam':'Toàn thế giới';
   document.querySelector('#map-location-note').textContent=domestic?'Ghim đã đến theo tên bạn cung cấp · Vị trí đại diện địa danh':'Màu vàng & ghim ✓: đã đến · Vị trí đại diện quốc gia';

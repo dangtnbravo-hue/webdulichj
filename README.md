@@ -45,3 +45,11 @@ Vercel nối `dangtnbravo-hue/webdulichj`, nhánh `main`, framework Vite, build 
 Danh sách trong `src/vietnam-places.js`: Ninh Bình, Mộc Châu, Quảng Ninh, Hải Phòng, Bắc Ninh, Bắc Giang, Nghệ An, Hải Dương, Thái Bình, Quảng Trị, Quảng Bình, Đà Nẵng, Hồ Chí Minh, Vĩnh Phúc, Hưng Yên, Hà Nam, Nam Định, Tuyên Quang, Hòa Bình, Hà Tĩnh. Giữ nguyên tên địa phương quen thuộc do tác giả cung cấp, không diễn giải thành danh sách đơn vị hành chính hiện hành. Mỗi địa danh có một tọa độ đại diện, không phải GPS hay địa chỉ ghé thăm cụ thể. Không tự tạo ảnh, ngày đi hoặc nội dung kỷ niệm.
 
 Bấm cụm số để tách các ghim gần nhau khi phóng to; dùng danh sách 20 nút bên dưới bản đồ để tìm từng nơi bằng chuột hoặc bàn phím. Thông tin này nằm trong mã website nên khách cũng thấy ngay sau triển khai, không phải chạy lại SQL hoặc ghi đè bài đã đăng. Các bài viết/ảnh trên Supabase được giữ nguyên. Việt Nam có bộ đếm 20 địa điểm riêng; Quốc tế vẫn tính 7 nước đã đến.
+
+## Ranh giới tỉnh/thành nhiều màu
+
+Trong mục Việt Nam có hai lớp: **34 tỉnh/thành sau sắp xếp 2025** (mặc định) và **63 tỉnh/thành trước 2025**. Lớp 34 được dựng minh họa bằng cách hợp các đơn vị cũ theo nhóm sắp xếp; không phải dữ liệu khảo sát hành chính mới. Tên địa điểm đã đi vẫn được giữ theo lời tác giả. Mỗi vùng có màu để phân biệt; màu nền không có nghĩa là đã đến. Ghé thăm được biểu thị bằng ghim vàng và nội dung popup.
+
+Chọn hoặc bấm một tỉnh để xem các địa điểm đã ghi nhận trong phạm vi đó; ví dụ vùng Ninh Bình sau sắp xếp chứa ba tên Ninh Bình, Hà Nam và Nam Định. Ranh giới được tải từ `public/maps` khi mở bản đồ Việt Nam; không dùng API key và không cần chạy SQL. Nếu tệp lỗi, bản đồ nền và 20 ghim vẫn hoạt động, có nút thử tải lại.
+
+Hai bộ dữ liệu minh họa được dẫn xuất từ Natural Earth public domain. Helper `scripts/build-vietnam-provinces.py` tạo dữ liệu từ `ne_10m_admin_1_states_provinces.geojson`, cần Shapely 2.x khi chạy lại (không phải dependency website). Helper kiểm tra 63 mã cũ được phân vào đúng 34 nhóm, không trùng/lọt đơn vị, và bảo toàn diện tích hợp; màu được chọn để phân biệt các vùng kề nhau. Tài sản GeoJSON đã được commit, Vercel không cần Python hay Shapely.
