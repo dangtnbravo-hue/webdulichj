@@ -35,6 +35,7 @@ let viewMode='globe';
 let internationalView='globe';
 let visited=new Set();
 let ready=false;
+let canEdit=false;
 let vietnamMemories=0;
 let selectedCode;
 const palette=['#c0e9d9','#c5def5','#e0cef1','#f5dfb5','#f2cbd7','#d4e8ba'];
@@ -56,7 +57,7 @@ function popup(code) {
   if(visited.has(code)) {
     if(visitedPlaces[code]?.length) {const places=document.createElement('p');places.className='visited-city-list';places.textContent=`Điểm đã ghé: ${visitedPlaces[code].join(' · ')}`;box.append(places);}
     const link=document.createElement('a');link.href='#my-journal';link.textContent=code==='VN'?'Xem nhật ký Việt Nam ↗':'Xem nhật ký quốc tế ↗';link.addEventListener('click',()=>openJournal(code));box.append(link);
-  } else {
+  } else if(canEdit) {
     const button=document.createElement('button');button.type='button';button.textContent='Đánh dấu đã đến +';button.disabled=!ready;
     button.addEventListener('click',()=>{button.disabled=true;button.textContent='Đang lưu…';window.dispatchEvent(new CustomEvent('map:visit',{detail:{code}}));});box.append(button);
   }
@@ -84,7 +85,8 @@ function refresh() {
   document.querySelector('#map-count-label').textContent=domestic?'kỷ niệm ở Việt Nam':'nước ngoài đã đến';
   document.querySelector('#map-country-select').disabled=!ready;
   document.querySelector('#map-country-form button').disabled=!ready;
-  document.querySelector('#vietnam-write-memory').disabled=!ready;
+  document.querySelector('#vietnam-write-memory').disabled=!ready||!canEdit;
+  document.querySelector('#vietnam-write-memory').hidden=!domestic||!canEdit;
   const status=document.querySelector('#map-status');
   if(!ready)status.textContent='Đang mở nhật ký trên trình duyệt này…';
   else if(domestic)status.textContent=visited.has('VN')?`Việt Nam đã có dấu chân · ${vietnamMemories} kỷ niệm được lưu.`:'Chưa ghi dấu Việt Nam. Bấm bản đồ để đánh dấu hoặc viết chuyến đi đầu tiên.';
@@ -131,7 +133,7 @@ function setRegion(nextRegion) {
   document.querySelector('#map-region-intro').textContent=domestic?'Chưa cần bay xa. Đi quanh nhà, gom cả rổ chuyện.':'Bản đồ có ghim, Đôn có chuyện. Chấm một nước, khui một kỷ niệm.';
   document.querySelector('#international-map-views').hidden=domestic;
   document.querySelector('#map-country-form').hidden=domestic;
-  document.querySelector('#vietnam-write-memory').hidden=!domestic;
+  document.querySelector('#vietnam-write-memory').hidden=!domestic||!canEdit;
   document.querySelector('#vietnam-stage').hidden=!domestic;
   document.querySelector('#globe-country-panel').hidden=true;
   document.querySelector('#map-reset').textContent=domestic?'Toàn Việt Nam':'Toàn thế giới';
@@ -164,7 +166,7 @@ export function mountWorldMap() {
   document.querySelector('#globe-zoom-in').addEventListener('click',()=>globe?.zoom(.8));document.querySelector('#globe-zoom-out').addEventListener('click',()=>globe?.zoom(1.25));
   document.querySelector('#globe-rotate').addEventListener('click',event=>{const rotating=globe?.rotate()||false;event.currentTarget.setAttribute('aria-pressed',String(rotating));event.currentTarget.textContent=rotating?'Dừng xoay':'Tự xoay';});
   document.querySelector('.globe-panel-close').addEventListener('click',()=>{document.querySelector('#globe-country-panel').hidden=true;selectedCode=null;});
-  window.addEventListener('journal:updated',event=>{visited=new Set(event.detail.countries);ready=event.detail.ready;vietnamMemories=event.detail.vietnamMemories||0;refresh();});
+  window.addEventListener('journal:updated',event=>{visited=new Set(event.detail.countries);ready=event.detail.ready;canEdit=Boolean(event.detail.canEdit);vietnamMemories=event.detail.vietnamMemories||0;refresh();});
   window.addEventListener('journal:save-error',()=>{if(selectedCode)showCountry(selectedCode,false);document.querySelector('#map-status').textContent='Chưa lưu được dấu chân. Kiểm tra quyền hoặc dung lượng lưu trữ trong nhật ký.';});
   new ResizeObserver(()=>map.invalidateSize({pan:false})).observe(document.querySelector('#world-map'));
   setRegion('international');

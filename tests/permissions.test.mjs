@@ -1,0 +1,40 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {PGlite} from '@electric-sql/pglite';
+
+test('database enforces one publisher, public reads, revision checks and owner-only photo uploads',async()=>{
+  const db=new PGlite();
+  await db.exec(`create role anon; create role authenticated; create schema auth; create schema storage;
+    create table auth.users(id uuid primary key);
+    create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+    grant usage on schema public,auth,storage to anon,authenticated;
+    grant execute on function auth.uid() to anon,authenticated;
+    create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+    create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text);
+    alter table storage.objects enable row level security;
+    grant select,insert,update,delete on storage.objects to anon,authenticated;
+    insert into auth.users values ('11111111-1111-4111-8111-111111111111'),('22222222-2222-4222-8222-222222222222');`);
+  await db.exec(await readFile(new URL('../supabase/setup.sql',import.meta.url),'utf8'));
+  // Scripts are repeatable and preserve published content.
+  await db.exec(await readFile(new URL('../supabase/setup.sql',import.meta.url),'utf8'));
+  await db.exec(`insert into public.site_owner(user_id) values ('11111111-1111-4111-8111-111111111111'); set role anon;`);
+  assert.equal((await db.query('select revision from public.site_journal')).rows[0].revision,0);
+  await assert.rejects(db.query('update public.site_journal set revision=5 where id=1'),/permission denied/);
+  await assert.rejects(db.query(`insert into storage.objects(bucket_id,name) values ('journal-photos','attack.jpg')`),/row-level security/);
+  await db.exec(`reset role; set role authenticated; select set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',false);`);
+  assert.equal((await db.query('select public.is_site_owner() as owner')).rows[0].owner,false);
+  assert.equal((await db.query(`update public.site_journal set content='{"version":1,"countries":[],"memories":[]}' returning id`)).rows.length,0);
+  await assert.rejects(db.query(`insert into public.site_owner(user_id) values ('22222222-2222-4222-8222-222222222222')`),/permission denied/);
+  await assert.rejects(db.query(`insert into storage.objects(bucket_id,name) values ('journal-photos','attack.jpg')`),/row-level security/);
+  await db.exec(`select set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',false);`);
+  assert.equal((await db.query('select public.is_site_owner() as owner')).rows[0].owner,true);
+  assert.equal((await db.query(`update public.site_journal set content='{"version":1,"countries":["VN"],"memories":[]}' where id=1 and revision=0 returning revision`)).rows[0].revision,1);
+  assert.equal((await db.query(`update public.site_journal set revision=999 where id=1 and revision=0 returning id`)).rows.length,0);
+  await db.query(`insert into storage.objects(bucket_id,name) values ('journal-photos','owner.jpg')`);
+  await assert.rejects(db.query(`insert into storage.objects(bucket_id,name) values ('other-bucket','owner.jpg')`),/row-level security/);
+  await assert.rejects(db.query(`update public.site_journal set content='{}' where id=1`),/content_shape/);
+  await db.exec('reset role;');
+  await assert.rejects(db.query(`insert into public.site_owner(singleton,user_id) values(false,'22222222-2222-4222-8222-222222222222')`),/check constraint/);
+  await db.close();
+});
