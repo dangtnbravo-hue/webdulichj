@@ -6,3 +6,5 @@ export function loadInternationalRegions(){
 export function regionHasVisit(region,codes){return codes.has(region.properties.code)&&region.properties.placeIds.length>0;}
 export function regionColor(region){return colors[region.properties.colorIndex%colors.length];}
 export function regionPlaces(region,codes,places){return codes.has(region.properties.code)?places.filter(p=>region.properties.placeIds.includes(p.id)):[];}
+
+export function visitedRegions(regions,codes){return regions.filter(region=>regionHasVisit(region,codes));}

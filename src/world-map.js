@@ -1,4 +1,4 @@
-import {loadInternationalRegions,regionHasVisit,regionColor,regionPlaces} from './international-regions.js';
+import {loadInternationalRegions,regionHasVisit,regionColor,regionPlaces,visitedRegions} from './international-regions.js';
 import { internationalPlaces, internationalMapPoints } from './international-places.js';
 import { vietnamPlaces } from './vietnam-places.js';
 import { visitedPlaces } from './visited-places.js';
@@ -42,12 +42,11 @@ let canEdit=false;
 let vietnamMemories=0;
 let selectedCode, selectedPlace, selectedRegion;
 let internationalRegions=[], regionLayer;
-const palette=['#c0e9d9','#c5def5','#e0cef1','#f5dfb5','#f2cbd7','#d4e8ba'];
 const markerIcon=L.divIcon({className:'visited-map-pin',html:'<svg viewBox="0 0 32 42" aria-hidden="true"><path d="M16 40S2 26 2 16a14 14 0 0 1 28 0c0 10-14 24-14 24Z" fill="#f2b63f" stroke="white" stroke-width="2"/><path d="m10 16 4 4 8-9" fill="none" stroke="#173e55" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',iconSize:[30,40],iconAnchor:[15,39],popupAnchor:[0,-32]});
 const foreignCodes=()=>[...visited].filter(code=>code!=='VN');
 function countryStyle(f) {
   // Visit highlights belong to recorded regions, never a whole country.
-  return {color:'#a7c5d1',weight:.7,fillColor:palette[Math.abs(Number(f.id)||0)%palette.length],fillOpacity:1};
+  return {color:'#a7c5d1',weight:.7,fillColor:'#e6f0f3',fillOpacity:1};
 }
 function openJournal(code) {
   window.dispatchEvent(new CustomEvent('map:show-journal',{detail:{code}}));
@@ -69,6 +68,7 @@ function popup(code) {
 }
 function regionStyle(f){return {className:'international-region-shape',color:regionHasVisit(f,visited)?'#f4fffa':'#cbe2e8',weight:regionHasVisit(f,visited)?1.8:.7,fillColor:regionColor(f),fillOpacity:regionHasVisit(f,visited)?.95:.5};}
 function showInternationalRegion(feature,fly=true){
+  if(!regionHasVisit(feature,visited))return;
   if(region==='vietnam')setRegion('international');
   selectedRegion=feature;selectedPlace=null;selectedCode=feature.properties.code;
   const p=feature.properties;
@@ -88,18 +88,27 @@ function showInternationalRegion(feature,fly=true){
     L.popup({maxWidth:250}).setLatLng(p.center).setContent(box).openOn(map);
   }
 }
+function refreshRegionOverlays(){
+  if(!regionLayer)return;
+  const shown=visitedRegions(internationalRegions,visited);
+  regionLayer.clearLayers().addData({type:'FeatureCollection',features:shown});
+  const select=document.querySelector('#international-region-select'),current=select.value;
+  select.replaceChildren(new Option('Chọn một vùng Đôn đã ghé…',''));
+  for(const code of [...new Set(shown.map(f=>f.properties.code))]){
+    const group=document.createElement('optgroup');group.label=names.of(code);
+    shown.filter(f=>f.properties.code===code).sort((a,b)=>a.properties.name.localeCompare(b.properties.name,'vi')).forEach(f=>group.append(new Option(f.properties.name,f.properties.regionId)));select.append(group);
+  }
+  select.disabled=!shown.length;
+  select.value=shown.some(f=>f.properties.regionId===current)?current:'';
+  document.querySelector('#international-region-status').textContent=`${shown.length} mảng màu có điểm Đôn đã ghé · Chỉ hiện nơi đã đi, phần còn lại giữ nền tự nhiên · Ghim vàng: địa điểm.`;
+}
 async function mountInternationalRegions(){
   const status=document.querySelector('#international-region-status');
   try{
     internationalRegions=await loadInternationalRegions();
-    regionLayer=L.geoJSON({type:'FeatureCollection',features:internationalRegions},{style:regionStyle,onEachFeature(f,layer){layer.bindTooltip(`${f.properties.name} · ${names.of(f.properties.code)}`);layer.on('click',()=>showInternationalRegion(f,false));}}).addTo(map);
-    const select=document.querySelector('#international-region-select');select.replaceChildren(new Option('Chọn một tỉnh/bang/khu vực…',''));
-    for(const code of [...new Set(internationalRegions.map(f=>f.properties.code))]){
-      const group=document.createElement('optgroup');group.label=names.of(code);
-      internationalRegions.filter(f=>f.properties.code===code).sort((a,b)=>a.properties.name.localeCompare(b.properties.name,'vi')).forEach(f=>group.append(new Option(f.properties.name,f.properties.regionId)));select.append(group);
-    }
-    select.disabled=false;
-    status.textContent=`${internationalRegions.length} mảng vùng trong 7 nước · Màu đậm, viền sáng: vùng có điểm đã ghé · Ghim vàng: địa điểm.`;
+    regionLayer=L.geoJSON(null,{style:regionStyle,onEachFeature(f,layer){layer.bindTooltip(`${f.properties.name} · ${names.of(f.properties.code)}`);layer.on('click',()=>showInternationalRegion(f,false));}}).addTo(map);
+    refreshRegionOverlays();
+    const select=document.querySelector('#international-region-select');
     select.addEventListener('change',()=>{const f=internationalRegions.find(f=>f.properties.regionId===select.value);if(f)showInternationalRegion(f);});
   }catch{status.textContent='Chưa tải được ranh giới vùng. Bạn vẫn có thể chọn ghim thành phố; hãy tải lại trang để thử lại.';}
 }
@@ -151,14 +160,14 @@ function refresh() {
   if(!ready)status.textContent='Đang mở nhật ký trên trình duyệt này…';
   else if(domestic)status.textContent=`${vietnamPlaces.length} địa điểm đã ghé · ${vietnamMemories} kỷ niệm được lưu. Bấm cụm ghim để phóng to hoặc chọn tên địa điểm.`;
   else status.textContent=foreign.length?`${foreign.length} nước ngoài đã ghé. Chạm ghim để khui chuyện.`:'Chưa có dấu chân quốc tế. Chọn một nước đã đến để ghim kỷ niệm nhé.';
-  countryLayer.setStyle(countryStyle);regionLayer?.setStyle(regionStyle);markers.clearLayers();
+  countryLayer.setStyle(countryStyle);refreshRegionOverlays();markers.clearLayers();
   internationalMapPoints(foreign,locations).forEach(place=>{const marker=L.marker([place.lat,place.lng],{icon:markerIcon,title:`${place.name} · ${names.of(place.code)}`,alt:place.name,keyboard:true}).addTo(markers);marker.on('click',()=>place.kind==='country'?showCountry(place.code,false):showInternationalPlace(place.id,false));});
   document.querySelectorAll('[data-destination-country]').forEach(group=>{group.hidden=!visited.has(group.dataset.destinationCountry);});
   globe?.update(foreign);
   vietnamMap?.update(visited.has('VN'));
   if(selectedCode) {
     if(domestic)vietnamMap.show(popup('VN'));
-    else if(viewMode==='globe'||map._popup) {if(selectedRegion)showInternationalRegion(selectedRegion,false);else if(selectedPlace&&visited.has(selectedPlace.code))showInternationalPlace(selectedPlace.id,false);else showCountry(selectedCode,false);}
+    else if(viewMode==='globe'||map._popup) {if(selectedRegion&&regionHasVisit(selectedRegion,visited))showInternationalRegion(selectedRegion,false);else if(selectedPlace&&visited.has(selectedPlace.code))showInternationalPlace(selectedPlace.id,false);else showCountry(selectedCode,false);}
   }
 }
 function resetMap() {
@@ -179,7 +188,7 @@ async function switchView(mode) {
     if(!globePromise)globePromise=import('./globe-view.js').then(module=>module.createGlobe(document.querySelector('#globe-canvas'),{onCountry:code=>showCountry(code),onPlace:place=>showInternationalPlace(place.id),onRegion:feature=>showInternationalRegion(feature),onFailure:()=>{internationalView='flat';if(region==='international'){switchView('flat');document.querySelector('#map-status').textContent='Thiết bị không giữ được chế độ 3D. Đã chuyển sang bản đồ 2D.';}}}));
     globe=await globePromise;globe.update(foreignCodes());globe.activate(region==='international'&&viewMode==='globe');
     if(selectedCode&&region==='international'&&viewMode==='globe'){if(selectedRegion)globe.focusRegion(selectedRegion);else if(selectedPlace)globe.focusPlace(selectedPlace);else globe.focus(selectedCode);}
-    document.querySelector('#globe-feedback').textContent='Mỗi mảng màu một vùng. Vùng có điểm đã ghé đậm màu, viền sáng; ghim vàng chỉ đúng địa điểm.';
+    document.querySelector('#globe-feedback').textContent='Chỉ tô màu nơi Đôn đã ghé. Chạm mảng màu hoặc ghim vàng để xem từng điểm.';
   } catch {
     globePromise=null;internationalView='flat';
     if(region==='international'){switchView('flat');document.querySelector('#map-status').textContent='Trình duyệt chưa hỗ trợ địa cầu 3D. Bản đồ quốc tế 2D vẫn xem và đánh dấu bình thường.';}

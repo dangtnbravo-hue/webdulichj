@@ -1,4 +1,4 @@
-"""Build illustrative regional overlays for the seven recorded foreign countries.
+"""Build only regional overlays containing confirmed author destinations.
 Usage: python scripts/build-international-regions.py NE_ADM1.geojson YUNNAN_ECHARTS.json
 Requires Shapely 2. Sources and license: THIRD_PARTY_NOTICES.md.
 """
@@ -19,6 +19,7 @@ def decode_ring(encoded, offset):
     return result
 regions=[];geometries=[]
 def add(geometry, id, code, name, level):
+    if not PLACES.get(id):return
     geometry=make_valid(geometry)
     if geometry.geom_type=='GeometryCollection':
         geometry=unary_union([g for g in geometry.geoms if g.geom_type in ('Polygon','MultiPolygon')])
