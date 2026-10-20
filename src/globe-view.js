@@ -1,4 +1,5 @@
 import Globe from 'globe.gl';
+import {loadInternationalRegions,regionHasVisit,regionColor} from './international-regions.js';
 import {feature} from 'topojson-client';
 import world from 'world-atlas/countries-110m.json';
 import locations from './country-locations.json';
@@ -6,23 +7,26 @@ import {internationalMapPoints} from './international-places.js';
 const names=new Intl.DisplayNames(['vi'],{type:'region'});
 const numericCodes=Object.fromEntries(Object.entries(locations).map(([code,country])=>[Number(country.numeric),code]));
 const palette=['#30c6b2','#57a8ed','#c08ee6','#ffc76b','#f08f9d','#a4cb75'];
-export async function createGlobe(container,{onCountry,onPlace,onFailure}) {
+export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailure}) {
   const context=document.createElement('canvas').getContext('webgl2');
   if(!context)throw new Error('WebGL2 unavailable');
   context.getExtension('WEBGL_lose_context')?.loseContext();
+  const regions=await loadInternationalRegions().catch(()=>[]);
+  const subdivided=new Set(regions.map(f=>f.properties.code));
+  container.dataset.regionCount=String(regions.length);
   let visited=new Set(),points=[],selectedId=null,clusterKey='',frame=0;
   let autoRotate=false,visible=true,active=true;
   const motion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const globe=new Globe(container,{rendererConfig:{antialias:true,alpha:true},waitForGlobeReady:false})
     .backgroundColor('#061b35').globeImageUrl('/images/earth-blue-marble.jpg')
     .showAtmosphere(true).atmosphereColor('#5cbfff').atmosphereAltitude(.17)
-    .polygonsData(feature(world,world.objects.countries).features.filter(f=>f.properties.name!=='Antarctica'))
-    .polygonAltitude(f=>visited.has(numericCodes[Number(f.id)])?.018:.003)
-    .polygonCapColor(f=>visited.has(numericCodes[Number(f.id)])?'rgba(255,190,66,0.72)':`${palette[Math.abs(Number(f.id)||0)%palette.length]}33`)
+    .polygonsData([...feature(world,world.objects.countries).features.filter(f=>f.properties.name!=='Antarctica'&&!subdivided.has(numericCodes[Number(f.id)])),...regions])
+    .polygonAltitude(f=>f.properties.regionId?(regionHasVisit(f,visited)?.012:.005):.002)
+    .polygonCapColor(f=>f.properties.regionId?`${regionColor(f)}${regionHasVisit(f,visited)?'ed':'78'}`:`${palette[Math.abs(Number(f.id)||0)%palette.length]}33`)
     .polygonSideColor(()=>'rgba(255,200,90,0.22)')
-    .polygonStrokeColor(f=>visited.has(numericCodes[Number(f.id)])?'#ffe098':'rgba(196,229,255,0.3)')
-    .polygonLabel(f=>{const code=numericCodes[Number(f.id)];return code?`${names.of(code)}${visited.has(code)?' · Đã đến ✓':''}`:f.properties.name;})
-    .onPolygonClick(f=>{const code=numericCodes[Number(f.id)];if(code)onCountry(code);})
+    .polygonStrokeColor(f=>f.properties.regionId?(regionHasVisit(f,visited)?'#eafff4':'rgba(219,243,255,0.65)'):'rgba(196,229,255,0.3)')
+    .polygonLabel(f=>{if(f.properties.regionId){const p=f.properties;return `${p.name} · ${names.of(p.code)}${regionHasVisit(f,visited)?' · Có điểm Đôn đã ghé ✓':''}`;}const code=numericCodes[Number(f.id)];return code?`${names.of(code)}${visited.has(code)?' · Đã đến ✓':''}`:f.properties.name;})
+    .onPolygonClick(f=>{if(f.properties.regionId){onRegion(f);return;}const code=numericCodes[Number(f.id)];if(code)onCountry(code);})
     .htmlLat(d=>d.lat).htmlLng(d=>d.lng).htmlAltitude(.055)
     .htmlElement(d=>{
       const pin=document.createElement('button');pin.type='button';pin.className='globe-country-pin';
@@ -62,10 +66,11 @@ export async function createGlobe(container,{onCountry,onPlace,onFailure}) {
   new ResizeObserver(()=>{if(container.clientWidth){globe.width(container.clientWidth).height(container.clientHeight);schedule();}}).observe(container);
   globe.renderer().setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
   globe.renderer().domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();onFailure();});
-  const textureCheck=new Image();textureCheck.onerror=()=>{globe.globeImageUrl(null);document.querySelector('#globe-feedback').textContent='Ảnh Trái Đất chưa tải được; vẫn có thể xoay và xem các nước trên địa cầu màu.';};textureCheck.src='/images/earth-blue-marble.jpg';
+  const textureCheck=new Image();textureCheck.onerror=()=>{globe.globeImageUrl(null);document.querySelector('#globe-feedback').textContent='Ảnh Trái Đất chưa tải được; vẫn có thể xoay và xem các vùng màu.';};textureCheck.src='/images/earth-blue-marble.jpg';
   return {
     update(codes){visited=new Set(codes);points=internationalMapPoints(codes,locations);if(selectedId&&!points.some(p=>p.id===selectedId))selectedId=null;rebuild();globe.ringsData(motion.matches?[]:points);globe.polygonAltitude(globe.polygonAltitude()).polygonCapColor(globe.polygonCapColor()).polygonStrokeColor(globe.polygonStrokeColor());},
     focus(code){selectedId=null;const known=points.filter(p=>p.code===code);if(known.length&&known[0].kind!=='country')focusPoints(known);else{const [lat,lng]=locations[code].latlng;globe.pointOfView({lat,lng,altitude:1.65},motion.matches?0:650);}rebuild(true);},
+    focusRegion(region){selectedId=null;const [lat,lng]=region.properties.center;globe.pointOfView({lat,lng,altitude:Math.min(1.6,.24+region.properties.span/45)},motion.matches?0:650);rebuild(true);},
     focusPlace(place){selectedId=place.id;focusPoints([place]);rebuild(true);},
     reset(){selectedId=null;globe.pointOfView({lat:19,lng:107,altitude:2.25},motion.matches?0:600);rebuild(true);},
     zoom(factor){const point=globe.pointOfView();globe.pointOfView({...point,altitude:Math.max(.18,Math.min(5,point.altitude*factor))},motion.matches?0:250);},

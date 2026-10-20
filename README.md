@@ -19,10 +19,10 @@ npm run preview
 
 ## Hai khu vực
 
-- **Quốc tế:** địa cầu 3D 360°, ảnh Trái Đất, tô vàng các nước đã đến, 11 ghim thành phố/khu vực thuộc 7 nước đã ghé; các điểm gần nhau gom cụm khi thu nhỏ. Chọn tên trong danh sách hoặc trong bảng quốc gia để xoay tới từng nơi (gồm Lệ Giang, Côn Minh, Shangri-La và Bangkok). Tọa độ đại diện địa danh, không phải GPS chuyến đi; Fuji là khu vực. Quốc gia mới chưa có thành phố dùng ghim đại diện quốc gia. Có bản đồ phẳng nhiều màu, tự dự phòng khi không có WebGL2.
+- **Quốc tế:** địa cầu 3D 360°, ảnh Trái Đất, chia 249 mảng tỉnh/bang/khu vực trong 7 nước, mỗi mảng một màu. Vân Nam chia 16 địa cấp để phân biệt Lệ Giang, Côn Minh và Địch Khánh (Shangri-La). Vùng có điểm ghé cụ thể đậm màu, viền sáng; không tô nguyên nước thành một mảng đã đến. Có danh sách chọn vùng và tương tác trên cả 3D/2D; 11 ghim thành phố/khu vực thuộc 7 nước đã ghé; các điểm gần nhau gom cụm khi thu nhỏ. Chọn tên trong danh sách hoặc trong bảng quốc gia để xoay tới từng nơi (gồm Lệ Giang, Côn Minh, Shangri-La và Bangkok). Tọa độ đại diện địa danh, không phải GPS chuyến đi; Fuji là khu vực. Quốc gia mới chưa có thành phố dùng ghim đại diện quốc gia. Có bản đồ phẳng nhiều màu, tự dự phòng khi không có WebGL2.
 - **Việt Nam:** bản đồ riêng với đường bờ biển Natural Earth 1:10m. Có 20 địa điểm đã đến do tác giả cung cấp, ghim và cụm ghim có thể bấm để khám phá. Bộ đếm Việt Nam tính địa điểm trong danh sách này, không làm tăng số nước ngoài. Các nhãn nền trung tính chỉ để định hướng.
 
-Danh sách ban đầu trong `src/visited-places.js`: Indonesia — Jakarta; Malaysia — Kuala Lumpur; Campuchia — Phnom Penh, Siem Reap; Singapore; Thái Lan; Nhật Bản — Tokyo, Fuji; Trung Quốc — Lệ Giang. Tổng cộng 7 nước ngoài. Không tự tạo ngày đi, ảnh hoặc trải nghiệm thực tế.
+Danh sách ban đầu trong `src/visited-places.js`: Indonesia — Jakarta; Malaysia — Kuala Lumpur; Campuchia — Phnom Penh, Siem Reap; Singapore; Thái Lan — Bangkok; Nhật Bản — Tokyo, Fuji; Trung Quốc — Lệ Giang, Côn Minh, Shangri-La. Tổng cộng 7 nước ngoài. Không tự tạo ngày đi, ảnh hoặc trải nghiệm thực tế.
 
 ## Một người đăng, mọi người xem
 
@@ -57,3 +57,5 @@ Hai bộ dữ liệu minh họa được dẫn xuất từ Natural Earth public 
 ## Nền tương tác theo con trỏ
 
 Quầng sáng xanh dương/xanh lá theo chuột trên các mảng nền ngoài; lớp trang trí không nhận thao tác và nằm dưới nội dung, không phủ lên bản đồ hay biểu mẫu. Chỉ cập nhật theo khung hình khi chuột di chuyển, không chạy vòng lặp thường trực. Tự tắt trên thiết bị cảm ứng và khi bật giảm chuyển động; cũng áp dụng cho nhật ký mới được thay vào sau đăng nhập.
+
+Dữ liệu vùng được đóng gói sẵn, không cần API bản đồ. Dùng `scripts/build-international-regions.py` với hai nguồn ghi trong notices để tái tạo (cần Shapely 2). Ranh giới minh họa từ dữ liệu lịch sử; Fuji ở khu vực giáp ranh và Singapore mới ghi nhận cấp quốc gia nên không tự suy ra vùng đã ghé.

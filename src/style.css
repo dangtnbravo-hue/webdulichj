@@ -46,3 +46,8 @@
 .globe-city-pin:hover .globe-city-name,.globe-city-pin:focus-visible .globe-city-name,.globe-city-pin[aria-current=true] .globe-city-name{opacity:1}
 .globe-city-pin[aria-current=true]{outline:3px solid #70e3b5;outline-offset:3px}
 .country-city-buttons{margin:10px 0}
+.international-region-controls{padding:14px 16px;margin:0 0 20px;background:#eaf4f7;border:1px solid #c9dfe5;border-radius:12px}
+.international-region-controls label{display:block;margin-bottom:8px;font-weight:700;color:#215b67}
+.international-region-controls select{max-width:100%;width:320px;padding:10px;border:1px solid #b5d6dc;border-radius:8px;color:#24576c;background:white;font:inherit}
+.international-region-controls p{font-size:13px;margin:10px 0 6px;color:#28665d}
+.international-region-controls small{font-size:11px;color:#547686}
