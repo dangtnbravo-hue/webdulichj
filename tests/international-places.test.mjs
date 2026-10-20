@@ -12,5 +12,7 @@ test('eleven confirmed international destinations retain seven countries and exa
  const locations={CN:{latlng:[35,105]},US:{latlng:[38,-97]},VN:{latlng:[16,106]}};
  const points=internationalMapPoints(['CN','CN','US','VN'],locations);
  assert.equal(points.length,4);assert.equal(points.at(-1).kind,'country');assert.equal(points.at(-1).code,'US');
- assert.equal(internationalPlaces.find(p=>p.id==='fuji').kind,'area');
+ assert.equal(internationalPlaces.find(p=>p.id==='fuji').kind,'city');
 });
+
+test('Fuji pin is in the author-confirmed city, not at the Mount Fuji summit',()=>{const fuji=internationalPlaces.find(p=>p.id==='fuji');assert.ok(fuji.lat<35.2&&fuji.lat>35.1);});

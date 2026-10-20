@@ -33,7 +33,13 @@ export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailur
         pin.setAttribute('aria-current',String(place.id===selectedId));
         pin.addEventListener('click',e=>{e.stopPropagation();place.kind==='country'?onCountry(place.code):onPlace(place);});
       }
-      pin.setAttribute('aria-label',pin.title);return pin;
+      pin.dataset.countryCode=d.code;
+      const label=pin.querySelector('.globe-city-name')||document.createElement('span');label.className='globe-city-name';
+      if(!label.textContent)label.textContent=d.places[0].name;
+      if(d.places.length>1)label.textContent=`${names.of(d.code)} · ${d.places.length} điểm`;
+      const region=regions.find(f=>f.properties.placeIds.includes(d.places[0].id));
+      if(region){pin.style.setProperty('--place-color',regionColor(region));}
+      pin.append(label);pin.setAttribute('aria-label',pin.title);return pin;
     })
     .htmlElementVisibilityModifier((element,shown)=>{element.style.visibility=shown?'visible':'hidden';element.style.pointerEvents=shown?'auto':'none';});
   const controls=globe.controls();controls.enablePan=false;controls.minDistance=101;controls.maxDistance=700;controls.autoRotateSpeed=.45;
@@ -78,7 +84,7 @@ export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailur
         container.dataset.regionCount=String(visibleRegions.length);
       }
     },
-    focus(code){selectedId=null;const known=points.filter(p=>p.code===code);if(known.length&&known[0].kind!=='country')focusPoints(known);else{const [lat,lng]=locations[code].latlng;globe.pointOfView({lat,lng,altitude:1.65},motion.matches?0:650);}rebuild(true);},
+    focus(code){selectedId=null;const known=points.filter(p=>p.code===code),areas=visitedRegions(regions,visited).filter(f=>f.properties.code===code);if(areas.length===1)focusRegion(areas[0]);else if(known.length&&known[0].kind!=='country')focusPoints(known);else{const [lat,lng]=locations[code].latlng;globe.pointOfView({lat,lng,altitude:1.65},motion.matches?0:650);}rebuild(true);},
     focusRegion(region){selectedId=null;focusRegion(region);rebuild(true);},
     focusPlace(place){selectedId=place.id;const region=regions.find(f=>f.properties.placeIds.includes(place.id));if(region)focusRegion(region);else focusPoints([place]);rebuild(true);},
     reset(){selectedId=null;globe.pointOfView({lat:19,lng:107,altitude:2.25},motion.matches?0:600);rebuild(true);},

@@ -1,4 +1,4 @@
-import {loadInternationalRegions,regionHasVisit,regionColor,regionPlaces,visitedRegions} from './international-regions.js';
+import {loadInternationalRegions,regionHasVisit,regionColor,regionPlaces,visitedRegions,regionPreviewLayout} from './international-regions.js';
 import { internationalPlaces, internationalMapPoints } from './international-places.js';
 import { vietnamPlaces } from './vietnam-places.js';
 import { visitedPlaces } from './visited-places.js';
@@ -70,7 +70,7 @@ function regionStyle(f){return {className:'international-region-shape',color:reg
 function appendRegionArea(box,feature){
   const area=document.createElement('p');area.className='region-area';
   area.textContent=`Diện tích theo ranh giới bản đồ: ≈ ${new Intl.NumberFormat('vi-VN').format(feature.properties.areaKm2)} km²`;
-  const label=document.createElement('small');label.textContent=`Phạm vi: ${feature.properties.name}. Số liệu ước tính từ hình học bản đồ.`;
+  const label=document.createElement('small');label.textContent=`Phạm vi: ${feature.properties.name}. ${feature.properties.code==='SG'?'Đường bao quốc gia gồm vùng nước ven bờ theo nguồn bản đồ. ':''}Số liệu ước tính từ hình học bản đồ.`;
   box.append(area,label);
 }
 function showInternationalRegion(feature,fly=true){
@@ -80,7 +80,7 @@ function showInternationalRegion(feature,fly=true){
   const p=feature.properties;
   const box=document.createElement('div');box.className='country-map-popup international-region-popup';
   const title=document.createElement('strong');title.textContent=p.name;box.append(title);
-  const country=document.createElement('p');country.textContent=`${names.of(p.code)} · ${p.level==='prefecture'?'Địa cấp thuộc Vân Nam':'Tỉnh/bang/khu vực'}`;box.append(country);
+  const country=document.createElement('p');country.textContent=`${names.of(p.code)} · ${p.level==='country'?'Toàn quốc':p.level==='city'?'Thành phố':p.level==='prefecture'?'Địa cấp thuộc Vân Nam':'Tỉnh/bang/khu vực'}`;box.append(country);
   appendRegionArea(box,feature);
   const places=regionPlaces(feature,visited,internationalPlaces);
   const note=document.createElement('p');note.textContent=places.length?'Có dấu chân của Đôn tại:':'Chưa ghi nhận điểm ghé cụ thể trong vùng này.';box.append(note);
@@ -95,10 +95,29 @@ function showInternationalRegion(feature,fly=true){
     L.popup({maxWidth:250}).setLatLng(p.center).setContent(box).openOn(map);
   }
 }
+function renderRegionPreviews(regions){
+  const gallery=document.querySelector('#international-region-previews');gallery.replaceChildren();
+  for(const region of regions){
+    const p=region.properties,button=document.createElement('button');button.type='button';button.dataset.regionPreview=p.regionId;
+    button.style.setProperty('--region-color',regionColor(region));
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 160 104');svg.setAttribute('aria-hidden','true');
+    const preview=regionPreviewLayout(region);
+    for(const d of preview.paths){const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',d);path.setAttribute('fill',regionColor(region));path.setAttribute('fill-rule','evenodd');svg.append(path);}
+    if(preview.inset){
+      const line=document.createElementNS(svg.namespaceURI,'path');line.setAttribute('d','M115,12 L115,93');line.setAttribute('stroke','#b7cfd8');line.setAttribute('stroke-dasharray','3 3');svg.append(line);
+      const label=document.createElementNS(svg.namespaceURI,'text');label.setAttribute('x','128');label.setAttribute('y','10');label.setAttribute('font-size','8');label.setAttribute('fill','#4a6e7b');label.textContent='Đảo';svg.append(label);
+    }
+    const title=document.createElement('strong');title.textContent=p.name;
+    const note=document.createElement('span');note.textContent=`≈ ${new Intl.NumberFormat('vi-VN').format(p.areaKm2)} km² · Xem vùng ↗`;
+    if(preview.inset){button.title='Đất chính và đảo ngoài khơi được phóng riêng trong ô xem trước.';}
+    button.append(svg,title,note);button.addEventListener('click',()=>{showInternationalRegion(region);document.querySelector(viewMode==='globe'?'#globe-stage':'#world-map').scrollIntoView({behavior:'auto',block:'center'});});gallery.append(button);
+  }
+}
 function refreshRegionOverlays(){
   if(!regionLayer)return;
   const shown=visitedRegions(internationalRegions,visited);
   regionLayer.clearLayers().addData({type:'FeatureCollection',features:shown});
+  renderRegionPreviews(shown);
   const select=document.querySelector('#international-region-select'),current=select.value;
   select.replaceChildren(new Option('Chọn một vùng Đôn đã ghé…',''));
   for(const code of [...new Set(shown.map(f=>f.properties.code))]){
@@ -153,7 +172,7 @@ function showCountry(code,fly=true) {
     document.querySelector('#globe-country-panel').hidden=false;return;
   }
   const position=locations[code].latlng;
-  if(fly)map.setView(position,Math.max(map.getZoom(),3),{animate:false});
+  if(fly){const regions=visitedRegions(internationalRegions,visited).filter(f=>f.properties.code===code);if(regions.length)map.fitBounds(L.geoJSON({type:'FeatureCollection',features:regions}).getBounds(),{padding:[40,40],maxZoom:12,animate:false});else map.setView(position,Math.max(map.getZoom(),3),{animate:false});}
   L.popup({maxWidth:230}).setLatLng(position).setContent(popup(code)).openOn(map);
 }
 function refresh() {

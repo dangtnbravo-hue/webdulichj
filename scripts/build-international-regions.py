@@ -1,5 +1,5 @@
 """Build only regional overlays containing confirmed author destinations.
-Usage: python scripts/build-international-regions.py NE_ADM1.geojson YUNNAN_ECHARTS.json
+Usage: python scripts/build-international-regions.py NE_ADM1.geojson YUNNAN_ECHARTS.json SINGAPORE.json FUJI_CITY.json
 Requires Shapely 2. Sources and license: THIRD_PARTY_NOTICES.md.
 """
 import json, sys, math
@@ -8,7 +8,7 @@ from shapely.geometry import shape, mapping
 from shapely import make_valid
 from shapely.ops import unary_union
 CODES={'CHN':'CN','THA':'TH','JPN':'JP','IDN':'ID','MYS':'MY','KHM':'KH','SGP':'SG'}
-PLACES={'ID-JK':['jakarta'],'MY-14':['kuala-lumpur'],'KH-12':['phnom-penh'],'KH-17':['siem-reap'],'TH-10':['bangkok'],'JP-13':['tokyo'],'CN-530100':['con-minh'],'CN-530700':['le-giang'],'CN-533400':['shangri-la']}
+PLACES={'ID-JK':['jakarta'],'MY-14':['kuala-lumpur'],'KH-12':['phnom-penh'],'KH-17':['siem-reap'],'TH-10':['bangkok'],'JP-13':['tokyo'],'CN-530100':['con-minh'],'CN-530700':['le-giang'],'CN-533400':['shangri-la'],'SG':['singapore'],'JP-22210':['fuji']}
 YUNNAN_NAMES={'530100':'Côn Minh','530300':'Khúc Tĩnh','530400':'Ngọc Khê','530500':'Bảo Sơn','530600':'Chiêu Thông','530700':'Lệ Giang','530800':'Phổ Nhĩ','530900':'Lâm Thương','532300':'Sở Hùng','532500':'Hồng Hà','532600':'Văn Sơn','532800':'Tây Song Bản Nạp','532900':'Đại Lý','533100':'Đức Hoành','533300':'Nộ Giang','533400':'Địch Khánh · Shangri-La'}
 def decode_ring(encoded, offset):
     x,y=offset; result=[]
@@ -32,7 +32,7 @@ def add(geometry, id, code, name, level):
     if geometry.geom_type=='GeometryCollection':
         geometry=unary_union([g for g in geometry.geoms if g.geom_type in ('Polygon','MultiPolygon')])
     area_km2=round(spherical_area_km2(geometry))
-    geometry=geometry.simplify(.012,preserve_topology=True)
+    geometry=geometry.simplify(.0004 if id in ('SG','JP-22210') else .012,preserve_topology=True)
     if geometry.is_empty:return
     center=geometry.representative_point()
     props={'regionId':id,'code':code,'name':name,'level':level,'placeIds':PLACES.get(id,[]),'center':[round(center.y,5),round(center.x,5)],'span':round(max(geometry.bounds[2]-geometry.bounds[0],geometry.bounds[3]-geometry.bounds[1]),3),'areaKm2':area_km2,'bounds':[[geometry.bounds[1],geometry.bounds[0]],[geometry.bounds[3],geometry.bounds[2]]]}
@@ -48,6 +48,10 @@ for f in json.load(open(sys.argv[2]))['features']:
     if g['type']=='Polygon':coords=[decode_ring(r,o) for r,o in zip(coords,offsets)]
     else:coords=[[decode_ring(r,o) for r,o in zip(poly,off)] for poly,off in zip(coords,offsets)]
     id=str(f['id']);add(shape({'type':g['type'],'coordinates':coords}),'CN-'+id,'CN',YUNNAN_NAMES[id],'prefecture')
+# Full Singapore national outline and the author-confirmed Fuji municipality.
+for path,id,code,name,level in [(sys.argv[3],'SG','SG','Singapore','country'),(sys.argv[4],'JP-22210','JP','Fuji','city')]:
+    data=json.load(open(path))
+    add(unary_union([shape(f['geometry']) for f in data['features']]),id,code,name,level)
 # Adjacent regions receive different colors; colors remain stable between 2D and 3D.
 for i,region in enumerate(regions):
     neighbors={regions[j]['properties']['colorIndex'] for j in range(i) if geometries[i].distance(geometries[j])<.025 or (region['properties']['placeIds'] and regions[j]['properties']['placeIds'])}

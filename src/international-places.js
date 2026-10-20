@@ -7,7 +7,7 @@ export const internationalPlaces = [
   {id:'singapore',code:'SG',name:'Singapore',lat:1.3521,lng:103.8198,kind:'city'},
   {id:'bangkok',code:'TH',name:'Bangkok',lat:13.7563,lng:100.5018,kind:'city'},
   {id:'tokyo',code:'JP',name:'Tokyo',lat:35.6762,lng:139.6503,kind:'city'},
-  {id:'fuji',code:'JP',name:'Fuji',lat:35.3606,lng:138.7274,kind:'area'},
+  {id:'fuji',code:'JP',name:'Fuji',lat:35.1614,lng:138.6763,kind:'city'},
   {id:'le-giang',code:'CN',name:'Lệ Giang',lat:26.8721,lng:100.2299,kind:'city'},
   {id:'con-minh',code:'CN',name:'Côn Minh',lat:25.0389,lng:102.7183,kind:'city'},
   {id:'shangri-la',code:'CN',name:'Shangri-La',lat:27.8299,lng:99.706,kind:'city'},

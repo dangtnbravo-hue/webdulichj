@@ -18,3 +18,23 @@ export function regionView(region,aspect=1,fov=50){
   const radius=Math.max(vertical,horizontal/Math.max(.3,aspect))/2;
   return {lat,lng,altitude:Math.max(.012,Math.min(2, .008+1.4*radius/Math.tan(fov*Math.PI/360)))};
 }
+
+export function regionPreviewLayout(region){
+  const polygons=region.geometry.type==='Polygon'?[region.geometry.coordinates]:region.geometry.coordinates;
+  const lat=region.properties.center[0],scaleX=Math.cos(lat*Math.PI/180);
+  function bounds(parts){const coordinates=parts.flat(2);return [Math.min(...coordinates.map(p=>p[0])),Math.min(...coordinates.map(p=>p[1])),Math.max(...coordinates.map(p=>p[0])),Math.max(...coordinates.map(p=>p[1]))];}
+  function area(ring){return Math.abs(ring.reduce((sum,p,i)=>{const next=ring[(i+1)%ring.length];return sum+p[0]*next[1]-next[0]*p[1];},0));}
+  const largest=polygons.reduce((best,p,i)=>area(p[0])>area(polygons[best][0])?i:best,0);
+  const all=bounds(polygons),main=bounds([polygons[largest]]);
+  const inset=polygons.length>1&&Math.max(main[2]-main[0],main[3]-main[1])<Math.max(all[2]-all[0],all[3]-all[1])*.35;
+  const offshore=polygons.filter((_,i)=>i!==largest),islandBounds=inset?bounds(offshore):null;
+  const paths=polygons.map((rings,i)=>{
+    const b=inset?(i===largest?main:islandBounds):all;
+    const viewport=inset?(i===largest?[6,10,104,84]:[120,10,34,84]):[8,8,144,88];
+    const [x,y,w,h]=viewport,width=Math.max(.0001,(b[2]-b[0])*scaleX),height=Math.max(.0001,b[3]-b[1]);
+    const scale=Math.min(w/width,h/height),dx=x+(w-width*scale)/2,dy=y+(h-height*scale)/2;
+    return rings.map(ring=>ring.map(([lng,latitude],j)=>`${j?'L':'M'}${(dx+(lng-b[0])*scaleX*scale).toFixed(2)},${(dy+(b[3]-latitude)*scale).toFixed(2)}`).join(' ')+' Z').join(' ');
+  });
+  return {paths,inset};
+}
+export function regionPreviewPaths(region){return regionPreviewLayout(region).paths;}
