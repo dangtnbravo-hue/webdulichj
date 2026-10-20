@@ -1,5 +1,5 @@
 import Globe from 'globe.gl';
-import {loadInternationalRegions,regionColor,visitedRegions} from './international-regions.js';
+import {loadInternationalRegions,regionColor,visitedRegions,regionView} from './international-regions.js';
 import locations from './country-locations.json';
 import {internationalMapPoints} from './international-places.js';
 const names=new Intl.DisplayNames(['vi'],{type:'region'});
@@ -23,7 +23,7 @@ export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailur
     .polygonStrokeColor(()=>'#eafff4')
     .polygonLabel(f=>`${f.properties.name} · ${names.of(f.properties.code)} · Có điểm Đôn đã ghé ✓`)
     .onPolygonClick(onRegion)
-    .htmlLat(d=>d.lat).htmlLng(d=>d.lng).htmlAltitude(.055)
+    .htmlLat(d=>d.lat).htmlLng(d=>d.lng).htmlAltitude(.006)
     .htmlElement(d=>{
       const pin=document.createElement('button');pin.type='button';pin.className='globe-country-pin';
       if(d.places.length>1){pin.classList.add('globe-city-cluster');pin.textContent=String(d.places.length);pin.title=`${names.of(d.code)}: ${d.places.map(p=>p.name).join(', ')} — bấm để phóng to`;pin.addEventListener('click',e=>{e.stopPropagation();onCountry(d.code);focusPoints(d.places);});}
@@ -36,12 +36,12 @@ export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailur
       pin.setAttribute('aria-label',pin.title);return pin;
     })
     .htmlElementVisibilityModifier((element,shown)=>{element.style.visibility=shown?'visible':'hidden';element.style.pointerEvents=shown?'auto':'none';});
-  const controls=globe.controls();controls.enablePan=false;controls.minDistance=118;controls.maxDistance=700;controls.autoRotateSpeed=.45;
+  const controls=globe.controls();controls.enablePan=false;controls.minDistance=101;controls.maxDistance=700;controls.autoRotateSpeed=.45;
   function rebuild(force=false){
     frame=0;
     const groups=[];
     for(const point of points){
-      const position=globe.getScreenCoords(point.lat,point.lng,.055);
+      const position=globe.getScreenCoords(point.lat,point.lng,.006);
       const group=point.id===selectedId?null:groups.find(g=>g.code===point.code&&!g.selected&&Math.hypot(position.x-g.screen.x,position.y-g.screen.y)<34);
       if(group)group.places.push(point);else groups.push({code:point.code,screen:position,places:[point],selected:point.id===selectedId});
     }
@@ -53,6 +53,9 @@ export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailur
     const lat=places.reduce((n,p)=>n+p.lat,0)/places.length,lng=places.reduce((n,p)=>n+p.lng,0)/places.length;
     const span=Math.max(...places.map(p=>p.lat))-Math.min(...places.map(p=>p.lat))+Math.max(...places.map(p=>p.lng))-Math.min(...places.map(p=>p.lng));
     globe.pointOfView({lat,lng,altitude:Math.min(1.65,Math.max(.24,.24+span/45))},motion.matches?0:650);
+  }
+  function focusRegion(region){
+    globe.pointOfView(regionView(region,Math.max(.3,container.clientWidth/container.clientHeight),globe.camera().fov),motion.matches?0:650);
   }
   globe.onZoom(schedule);globe.pointOfView({lat:19,lng:107,altitude:2.25},0);
   function refreshAnimation(){const playing=active&&visible&&!document.hidden;if(playing)globe.resumeAnimation();else globe.pauseAnimation();controls.autoRotate=autoRotate&&playing;}
@@ -76,10 +79,10 @@ export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailur
       }
     },
     focus(code){selectedId=null;const known=points.filter(p=>p.code===code);if(known.length&&known[0].kind!=='country')focusPoints(known);else{const [lat,lng]=locations[code].latlng;globe.pointOfView({lat,lng,altitude:1.65},motion.matches?0:650);}rebuild(true);},
-    focusRegion(region){selectedId=null;const [lat,lng]=region.properties.center;globe.pointOfView({lat,lng,altitude:Math.min(1.6,.24+region.properties.span/45)},motion.matches?0:650);rebuild(true);},
-    focusPlace(place){selectedId=place.id;focusPoints([place]);rebuild(true);},
+    focusRegion(region){selectedId=null;focusRegion(region);rebuild(true);},
+    focusPlace(place){selectedId=place.id;const region=regions.find(f=>f.properties.placeIds.includes(place.id));if(region)focusRegion(region);else focusPoints([place]);rebuild(true);},
     reset(){selectedId=null;globe.pointOfView({lat:19,lng:107,altitude:2.25},motion.matches?0:600);rebuild(true);},
-    zoom(factor){const point=globe.pointOfView();globe.pointOfView({...point,altitude:Math.max(.18,Math.min(5,point.altitude*factor))},motion.matches?0:250);},
+    zoom(factor){const point=globe.pointOfView();globe.pointOfView({...point,altitude:Math.max(.012,Math.min(5,point.altitude*factor))},motion.matches?0:250);},
     rotate(){autoRotate=!autoRotate;refreshAnimation();return autoRotate;},
     activate(value){active=value;refreshAnimation();if(value&&container.clientWidth){globe.width(container.clientWidth).height(container.clientHeight);schedule();}},
   };

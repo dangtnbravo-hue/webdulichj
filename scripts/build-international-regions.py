@@ -2,7 +2,7 @@
 Usage: python scripts/build-international-regions.py NE_ADM1.geojson YUNNAN_ECHARTS.json
 Requires Shapely 2. Sources and license: THIRD_PARTY_NOTICES.md.
 """
-import json, sys
+import json, sys, math
 from pathlib import Path
 from shapely.geometry import shape, mapping
 from shapely import make_valid
@@ -17,16 +17,25 @@ def decode_ring(encoded, offset):
         x+=(dx>>1)^(-(dx&1));y+=(dy>>1)^(-(dy&1))
         result.append([x/1024,y/1024])
     return result
+def spherical_area_km2(geometry):
+    def ring_area(ring):
+        total=0
+        for a,b in zip(ring,ring[1:]):
+            total+=math.radians(b[0]-a[0])*(2+math.sin(math.radians(a[1]))+math.sin(math.radians(b[1])))
+        return abs(total)*6371.0088**2/2
+    polygons=[geometry] if geometry.geom_type=='Polygon' else geometry.geoms
+    return sum(ring_area(list(p.exterior.coords))-sum(ring_area(list(r.coords)) for r in p.interiors) for p in polygons)
 regions=[];geometries=[]
 def add(geometry, id, code, name, level):
     if not PLACES.get(id):return
     geometry=make_valid(geometry)
     if geometry.geom_type=='GeometryCollection':
         geometry=unary_union([g for g in geometry.geoms if g.geom_type in ('Polygon','MultiPolygon')])
+    area_km2=round(spherical_area_km2(geometry))
     geometry=geometry.simplify(.012,preserve_topology=True)
     if geometry.is_empty:return
     center=geometry.representative_point()
-    props={'regionId':id,'code':code,'name':name,'level':level,'placeIds':PLACES.get(id,[]),'center':[round(center.y,5),round(center.x,5)],'span':round(max(geometry.bounds[2]-geometry.bounds[0],geometry.bounds[3]-geometry.bounds[1]),3)}
+    props={'regionId':id,'code':code,'name':name,'level':level,'placeIds':PLACES.get(id,[]),'center':[round(center.y,5),round(center.x,5)],'span':round(max(geometry.bounds[2]-geometry.bounds[0],geometry.bounds[3]-geometry.bounds[1]),3),'areaKm2':area_km2,'bounds':[[geometry.bounds[1],geometry.bounds[0]],[geometry.bounds[3],geometry.bounds[2]]]}
     regions.append({'type':'Feature','properties':props,'geometry':mapping(geometry)})
     geometries.append(geometry)
 for f in json.load(open(sys.argv[1]))['features']:

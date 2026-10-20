@@ -67,6 +67,12 @@ function popup(code) {
   return box;
 }
 function regionStyle(f){return {className:'international-region-shape',color:regionHasVisit(f,visited)?'#f4fffa':'#cbe2e8',weight:regionHasVisit(f,visited)?1.8:.7,fillColor:regionColor(f),fillOpacity:regionHasVisit(f,visited)?.95:.5};}
+function appendRegionArea(box,feature){
+  const area=document.createElement('p');area.className='region-area';
+  area.textContent=`Diện tích theo ranh giới bản đồ: ≈ ${new Intl.NumberFormat('vi-VN').format(feature.properties.areaKm2)} km²`;
+  const label=document.createElement('small');label.textContent=`Phạm vi: ${feature.properties.name}. Số liệu ước tính từ hình học bản đồ.`;
+  box.append(area,label);
+}
 function showInternationalRegion(feature,fly=true){
   if(!regionHasVisit(feature,visited))return;
   if(region==='vietnam')setRegion('international');
@@ -75,6 +81,7 @@ function showInternationalRegion(feature,fly=true){
   const box=document.createElement('div');box.className='country-map-popup international-region-popup';
   const title=document.createElement('strong');title.textContent=p.name;box.append(title);
   const country=document.createElement('p');country.textContent=`${names.of(p.code)} · ${p.level==='prefecture'?'Địa cấp thuộc Vân Nam':'Tỉnh/bang/khu vực'}`;box.append(country);
+  appendRegionArea(box,feature);
   const places=regionPlaces(feature,visited,internationalPlaces);
   const note=document.createElement('p');note.textContent=places.length?'Có dấu chân của Đôn tại:':'Chưa ghi nhận điểm ghé cụ thể trong vùng này.';box.append(note);
   const list=document.createElement('div');list.className='country-city-buttons';
@@ -117,10 +124,12 @@ function showInternationalPlace(id,fly=true) {
   if(!place||!visited.has(place.code))return;
   if(region==='vietnam')setRegion('international');
   selectedPlace=place;selectedRegion=null;selectedCode=place.code;
-  document.querySelector('#international-region-select').value=internationalRegions.find(f=>f.properties.placeIds.includes(place.id))?.properties.regionId||'';
+  const boundary=internationalRegions.find(f=>f.properties.placeIds.includes(place.id));
+  document.querySelector('#international-region-select').value=boundary?.properties.regionId||'';
   const box=document.createElement('div');box.className='country-map-popup international-place-popup';
   const title=document.createElement('strong');title.textContent=place.name;box.append(title);
   const country=document.createElement('p');country.textContent=`${names.of(place.code)} · Đôn đã ghé ✓`;box.append(country);
+  if(boundary)appendRegionArea(box,boundary);
   const note=document.createElement('p');note.textContent=place.kind==='area'?'Vị trí đại diện khu vực Fuji.':'Vị trí đại diện thành phố, không phải tọa độ từng bức ảnh.';box.append(note);
   const link=document.createElement('a');link.href='#my-journal';link.textContent='Khui nhật ký nước này ↗';link.addEventListener('click',()=>openJournal(place.code));box.append(link);
   if(viewMode==='globe') {
@@ -128,7 +137,7 @@ function showInternationalPlace(id,fly=true) {
     document.querySelector('#globe-country-content').replaceChildren(box);
     document.querySelector('#globe-country-panel').hidden=false;
   } else {
-    if(fly)map.setView([place.lat,place.lng],7,{animate:false});
+    if(fly){if(boundary)map.fitBounds(boundary.properties.bounds,{padding:[40,40],maxZoom:12,animate:false});else map.setView([place.lat,place.lng],7,{animate:false});}
     L.popup({maxWidth:250}).setLatLng([place.lat,place.lng]).setContent(box).openOn(map);
   }
 }
@@ -223,7 +232,7 @@ function setRegion(nextRegion) {
 export function mountWorldMap() {
   const select=document.querySelector('#map-country-select');
   countryCodes.forEach(code=>{const option=document.createElement('option');option.value=code;option.textContent=names.of(code);select.append(option);});
-  map=L.map('world-map',{fadeAnimation:false,center:[18,15],zoom:1.5,minZoom:0,maxZoom:9,zoomSnap:.25,scrollWheelZoom:false,worldCopyJump:false,maxBounds:[[-85,-210],[85,210]],maxBoundsViscosity:.8});
+  map=L.map('world-map',{fadeAnimation:false,center:[18,15],zoom:1.5,minZoom:0,maxZoom:13,zoomSnap:.25,scrollWheelZoom:false,worldCopyJump:false,maxBounds:[[-85,-210],[85,210]],maxBoundsViscosity:.8});
   map.attributionControl.setPrefix(false);map.attributionControl.addAttribution('Bản đồ: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a> · Vị trí: <a href="https://github.com/mledoze/countries" target="_blank" rel="noopener noreferrer">Countries</a>');
   countryLayer=L.geoJSON(worldFeatures,{style:countryStyle,onEachFeature(f,layer){const code=numericCodes[Number(f.id)];if(code){layer.on('click',()=>showCountry(code,false));layer.on('mouseover',()=>layer.setStyle({weight:1.5,color:'#087cbd'}));layer.on('mouseout',()=>countryLayer.resetStyle(layer));}}}).addTo(map);
   markers=L.layerGroup().addTo(map);

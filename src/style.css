@@ -51,3 +51,5 @@
 .international-region-controls select{max-width:100%;width:320px;padding:10px;border:1px solid #b5d6dc;border-radius:8px;color:#24576c;background:white;font:inherit}
 .international-region-controls p{font-size:13px;margin:10px 0 6px;color:#28665d}
 .international-region-controls small{font-size:11px;color:#547686}
+.country-map-popup .region-area{font-weight:700;color:#146b67;margin-bottom:5px}
+.country-map-popup>small{display:block;color:#607b87;font-size:11px;line-height:1.5;margin-bottom:10px}

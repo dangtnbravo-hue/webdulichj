@@ -22,3 +22,18 @@ test('only confirmed destination regions are shipped and visible overlays follow
  assert.equal(features.find(f=>f.properties.regionId==='CN-YN'),undefined);
  assert.equal(features.filter(f=>f.properties.placeIds.includes('fuji')||f.properties.placeIds.includes('singapore')).length,0);
 });
+
+test('area metadata reflects full geographic regions and camera fitting preserves their bounds',async()=>{
+ const {regionView}=await import('../src/international-regions.js');
+ for(const [id,min,max] of [['CN-530700',19500,21500],['CN-530100',20000,22500],['TH-10',1450,1700],['MY-14',200,300]]){
+  const region=features.find(f=>f.properties.regionId===id);
+  assert.ok(region.properties.areaKm2>min&&region.properties.areaKm2<max,id);
+  const before=JSON.stringify(region);
+  const view=regionView(region,2.2);
+  const [[south,west],[north,east]]=region.properties.bounds;
+  assert.equal(view.lat,(south+north)/2);assert.equal(view.lng,(west+east)/2);
+  assert.ok(view.altitude>=.012&&view.altitude<.24);
+  assert.ok(regionView(region,.6).altitude>=view.altitude,'narrow screens need more camera distance');
+  assert.equal(JSON.stringify(region),before,'camera fitting must not enlarge geographic geometry');
+ }
+});

@@ -61,3 +61,5 @@ Quầng sáng xanh dương/xanh lá theo chuột trên các mảng nền ngoài;
 Dữ liệu vùng được đóng gói sẵn, không cần API bản đồ. Dùng `scripts/build-international-regions.py` với hai nguồn ghi trong notices để tái tạo (cần Shapely 2). Ranh giới minh họa từ dữ liệu lịch sử; Fuji ở khu vực giáp ranh và Singapore mới ghi nhận cấp quốc gia nên không tự suy ra vùng đã ghé.
 
 Hiệu năng địa cầu: chỉ dựng hình 9 vùng đã ghi nhận thay vì toàn bộ ranh giới thế giới và 249 vùng; bỏ vòng sóng chạy liên tục và chuyển động dựng lớp vùng. Lớp 2D và bộ chọn vùng cũng lọc theo danh sách quốc gia công khai. Tệp vùng chỉ khoảng 23 KB; địa điểm vẫn có 11 ghim và bộ đếm vẫn là 7 nước.
+
+Khi chọn thành phố có ranh giới, camera 3D/2D phóng vừa toàn bộ hình học vùng; không kéo giãn mảng màu để làm địa danh lớn giả. Bảng chi tiết ghi diện tích ước tính từ ranh giới bản đồ và tên phạm vi đang tô (ví dụ Địch Khánh cho Shangri-La). Đây là diện tích theo nguồn hình học minh họa, có thể gồm mặt nước và khác số liệu hành chính chính thức. Singapore/Fuji chưa có ranh giới vùng được gán nên không tự tạo diện tích. Dữ liệu chỉ thêm metadata diện tích/bounds; không đổi ranh giới đã đóng gói.
