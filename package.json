@@ -1,1 +1,1 @@
-{"name":"may-travel","version":"1.0.0","private":true,"type":"module","scripts":{"dev":"vite --host 0.0.0.0","build":"vite build","preview":"vite preview --host 0.0.0.0"},"devDependencies":{"vite":"7.3.1"}}
+{"name":"may-travel","version":"1.0.0","private":true,"type":"module","scripts":{"dev":"vite --host 0.0.0.0","build":"vite build","preview":"vite preview --host 0.0.0.0"},"devDependencies":{"vite":"7.3.1"},"dependencies":{"leaflet":"^1.9.4","topojson-client":"^3.1.0","world-atlas":"^2.0.2"}}

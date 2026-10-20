@@ -18,7 +18,7 @@ function openDatabase() {
     request.onupgradeneeded = () => request.result.createObjectStore('journal');
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
-    request.onblocked = () => reject(new Error('Đóng các tab Mây Du Ký khác rồi thử lại.'));
+    request.onblocked = () => reject(new Error('Đóng các tab Đôn Đú Đởn khác rồi thử lại.'));
   });
 }
 function loadState() {
@@ -53,10 +53,11 @@ async function mutate(action, message) {
   if(busy) return;
   setBusy(true);
   try { await action(); announce(message); }
-  catch { announce('Chưa lưu được thay đổi. Dữ liệu hiện tại vẫn được giữ. Kiểm tra dung lượng hoặc quyền lưu trữ của trình duyệt.'); }
+  catch { window.dispatchEvent(new Event('journal:save-error')); announce('Chưa lưu được thay đổi. Dữ liệu hiện tại vẫn được giữ. Kiểm tra dung lượng hoặc quyền lưu trữ của trình duyệt.'); }
   finally { setBusy(false); }
 }
 function render() {
+  window.dispatchEvent(new CustomEvent('journal:updated', { detail: { countries: [...state.countries], ready: Boolean(database) } }));
   document.querySelector('#country-count').textContent = state.countries.filter(code => code !== 'VN').length;
   const memories = state.memories.filter(m => inGroup(m.country));
   const visited = state.countries.filter(inGroup);
@@ -112,8 +113,8 @@ function exportAlbum(memories, selected = false) {
   if(!memories.length) { announce('Thêm một kỷ niệm trước khi xuất album.'); return; }
   if(!window.confirm('Album HTML sẽ chứa ảnh, kỷ niệm và kinh nghiệm của bạn. Người nhận có thể xem toàn bộ nội dung trong tệp. Tiếp tục xuất?')) return;
   const visited = selected ? [...new Set(memories.map(m=>m.country))] : state.countries;
-  const html = `<!doctype html><html lang="vi"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Nhật ký hành trình · Mây Du Ký</title><style>body{margin:0;background:#f4f8fa;color:#18344a;font:16px/1.8 system-ui,sans-serif}main{max-width:850px;margin:auto;padding:40px 22px}header{padding:30px 0;border-bottom:3px solid #249957}h1,h2{line-height:1.4}h1{color:#087cbd}article{background:white;padding:28px;border-radius:12px;margin:28px 0}h3{color:#249957}p{white-space:pre-wrap;overflow-wrap:anywhere}img{max-width:100%;height:auto;border-radius:8px;display:block;margin:15px auto}.meta{font-size:13px;color:#607a86}footer{font-size:12px;color:#607a86}</style><main><header><div>MÂY DU KÝ · NHẬT KÝ CÁ NHÂN</div><h1>Đi để nhớ. Kể để kết nối.</h1><p>${visited.filter(code => code !== 'VN').length} nước ngoài đã đến${visited.includes('VN') ? ' · Có hành trình Việt Nam' : ''} · ${memories.length} kỷ niệm</p><p class="meta">${escapeHTML(visited.map(countryName).join(' · '))}</p></header>${memories.map(m=>`<article><div class="meta">${escapeHTML(countryName(m.country))}${m.date ? ` · ${escapeHTML(m.date)}` : ''}</div><h2>${escapeHTML(m.title)}</h2>${m.story ? `<h3>Kỷ niệm</h3><p>${escapeHTML(m.story)}</p>` : ''}${m.tips ? `<h3>Kinh nghiệm muốn chia sẻ</h3><p>${escapeHTML(m.tips)}</p>` : ''}${m.photos.map((p,i)=>`<img src="${p}" alt="${escapeHTML(m.title)} — ảnh ${i+1}">`).join('')}</article>`).join('')}<footer>Album cá nhân được xuất từ Mây Du Ký. Tệp chứa ảnh để xem mà không cần kết nối Internet.</footer></main></html>`;
-  download('may-du-ky-album.html',html,'text/html;charset=utf-8'); announce('Đã xuất album HTML. Bạn có thể gửi tệp cho người thân; đây chưa phải đường link công khai.');
+  const html = `<!doctype html><html lang="vi"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Nhật ký hành trình · Đôn Đú Đởn</title><style>body{margin:0;background:#f4f8fa;color:#18344a;font:16px/1.8 system-ui,sans-serif}main{max-width:850px;margin:auto;padding:40px 22px}header{padding:30px 0;border-bottom:3px solid #249957}h1,h2{line-height:1.4}h1{color:#087cbd}article{background:white;padding:28px;border-radius:12px;margin:28px 0}h3{color:#249957}p{white-space:pre-wrap;overflow-wrap:anywhere}img{max-width:100%;height:auto;border-radius:8px;display:block;margin:15px auto}.meta{font-size:13px;color:#607a86}footer{font-size:12px;color:#607a86}</style><main><header><div>ĐÔN ĐÚ ĐỞN · NHẬT KÝ CÁ NHÂN</div><h1>Đi để nhớ. Kể để kết nối.</h1><p>${visited.filter(code => code !== 'VN').length} nước ngoài đã đến${visited.includes('VN') ? ' · Có hành trình Việt Nam' : ''} · ${memories.length} kỷ niệm</p><p class="meta">${escapeHTML(visited.map(countryName).join(' · '))}</p></header>${memories.map(m=>`<article><div class="meta">${escapeHTML(countryName(m.country))}${m.date ? ` · ${escapeHTML(m.date)}` : ''}</div><h2>${escapeHTML(m.title)}</h2>${m.story ? `<h3>Kỷ niệm</h3><p>${escapeHTML(m.story)}</p>` : ''}${m.tips ? `<h3>Kinh nghiệm muốn chia sẻ</h3><p>${escapeHTML(m.tips)}</p>` : ''}${m.photos.map((p,i)=>`<img src="${p}" alt="${escapeHTML(m.title)} — ảnh ${i+1}">`).join('')}</article>`).join('')}<footer>Album cá nhân được xuất từ Đôn Đú Đởn. Tệp chứa ảnh để xem mà không cần kết nối Internet.</footer></main></html>`;
+  download('don-du-don-album.html',html,'text/html;charset=utf-8'); announce('Đã xuất album HTML. Bạn có thể gửi tệp cho người thân; đây chưa phải đường link công khai.');
 }
 export async function mountJournal() {
   const section = document.createElement('section'); section.id='my-journal'; section.className='section personal-journal';
@@ -125,6 +126,17 @@ export async function mountJournal() {
   try { database = await openDatabase(); const stored = await loadState(); if(stored) state = validState(stored); render(); setBusy(false); }
   catch { announce('Không mở được kho lưu trữ. Hãy bật quyền lưu trữ, kiểm tra chế độ riêng tư hoặc thử trình duyệt khác. Nhật ký hiện chưa sẵn sàng.'); return; }
   document.querySelectorAll('[data-journal-group]').forEach(button => button.addEventListener('click', () => { journalGroup = button.dataset.journalGroup; render(); }));
+  window.addEventListener('map:show-journal', event => {
+    if (busy || !codes.includes(event.detail?.code)) return;
+    journalGroup = event.detail.code === 'VN' ? 'vietnam' : 'abroad';
+    render();
+  });
+  window.addEventListener('map:visit', event => {
+    const code = event.detail?.code;
+    if (!codes.includes(code) || busy) { window.dispatchEvent(new Event('journal:save-error')); return; }
+    if (state.countries.includes(code)) { render(); return; }
+    mutate(() => persist({...state, countries: [...state.countries, code]}), `Đã đánh dấu ${countryName(code)} trên bản đồ.`);
+  });
   document.querySelector('#add-memory').addEventListener('click',()=>openEditor());
   document.querySelector('#country-form').addEventListener('submit',event=>{event.preventDefault();const code=document.querySelector('#visited-country').value;if(state.countries.includes(code)){announce(`${countryName(code)} đã có trong danh sách. Mỗi quốc gia chỉ tính một lần.`);return;}mutate(()=>persist({...state,countries:[...state.countries,code]}),`Đã thêm ${countryName(code)} vào hành trình.`);});
   section.addEventListener('click',event=>{
@@ -146,7 +158,7 @@ export async function mountJournal() {
     catch(error){status.textContent=error.message.startsWith('Chọn ảnh')?error.message:'Chưa lưu được. Kiểm tra định dạng ảnh và dung lượng trình duyệt; dữ liệu cũ vẫn được giữ.';}
     finally{setBusy(false);}
   });
-  document.querySelector('#backup-journal').addEventListener('click',()=>{download(`may-du-ky-backup-${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(state),'application/json');announce('Đã tải bản sao lưu gồm ảnh và nội dung. Giữ tệp ở nơi riêng tư; có thể nhập lại trên thiết bị khác.');});
+  document.querySelector('#backup-journal').addEventListener('click',()=>{download(`don-du-don-backup-${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(state),'application/json');announce('Đã tải bản sao lưu gồm ảnh và nội dung. Giữ tệp ở nơi riêng tư; có thể nhập lại trên thiết bị khác.');});
   document.querySelector('#share-journal').addEventListener('click',()=>exportAlbum(state.memories));
   document.querySelector('#import-journal').addEventListener('click',()=>document.querySelector('#backup-file').click());
   document.querySelector('#backup-file').addEventListener('change',async event=>{const file=event.target.files[0];event.target.value='';if(!file||busy)return;if(file.size>50*1024*1024){announce('Tệp sao lưu tối đa 50 MB.');return;}setBusy(true);try{const incoming=validState(JSON.parse(await file.text()));if(!window.confirm(`Nhập ${incoming.memories.length} kỷ niệm, ${incoming.countries.length} quốc gia? Dữ liệu sẽ được gộp. Kỷ niệm có cùng mã sẽ được thay bằng bản nhập.`))return;const merged=new Map(state.memories.map(m=>[m.id,m]));incoming.memories.forEach(m=>merged.set(m.id,m));await persist(validState({version:1,countries:[...new Set([...state.countries,...incoming.countries])],memories:[...merged.values()]}));announce('Đã nhập bản sao lưu và gộp với nhật ký hiện tại.');}catch{announce('Không nhập được: tệp không đúng định dạng, quá giới hạn, hoặc không đủ dung lượng. Dữ liệu cũ vẫn được giữ.');}finally{setBusy(false);}});
