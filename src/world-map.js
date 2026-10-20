@@ -43,7 +43,7 @@ function countryStyle(f) {
 function popup(code) {
   const box = document.createElement('div'); box.className='country-map-popup';
   const title = document.createElement('strong'); title.textContent=names.of(code); box.append(title);
-  const status = document.createElement('p'); status.textContent=visited.has(code)?'✓ Đã có trong hành trình của bạn':'Một vùng đất đang chờ bạn khám phá.'; box.append(status);
+  const status = document.createElement('p'); status.textContent=visited.has(code)?'✓ Chân đã ghé, chuyện còn đây.':'Chỗ này chưa ghim. Đôi chân có đang rục rịch không?'; box.append(status);
   if(visited.has(code)) {
     if(visitedPlaces[code]?.length) { const places=document.createElement('p'); places.className='visited-city-list'; places.textContent=`Điểm đã ghé: ${visitedPlaces[code].join(' · ')}`; box.append(places); }
     const link=document.createElement('a'); link.href='#my-journal'; link.textContent='Xem nhật ký của tôi ↗'; link.addEventListener('click',()=>{window.dispatchEvent(new CustomEvent('map:show-journal',{detail:{code}}));map.closePopup();}); box.append(link);
@@ -79,7 +79,7 @@ export function mountWorldMap() {
     select.disabled=!ready;document.querySelector('#map-country-form button').disabled=!ready;
     document.querySelector('#map-country-count').textContent=[...visited].filter(c=>c!=='VN').length;
     const status=document.querySelector('#map-status');
-    status.textContent=!ready?'Nhật ký chưa sẵn sàng. Kiểm tra thông báo trong mục Nhật ký của tôi.':visited.size?`${visited.size} ghim đã lưu${visited.has('VN')?' · Bao gồm Việt Nam':''}. Chọn ghim để xem quốc gia.`:'Chưa có dấu chân nào. Chọn quốc gia đầu tiên và đánh dấu đã đến.';
+    status.textContent=!ready?'Nhật ký chưa sẵn sàng. Kiểm tra thông báo trong mục Nhật ký của tôi.':visited.size?`${visited.size} ghim đã lưu${visited.has('VN')?' · Bao gồm Việt Nam':''}. Chọn ghim để xem quốc gia.`:'Bản đồ còn trống, Đôn đâu chịu ngồi yên. Chọn nước đã đến để ghim kỷ niệm nhé.';
     countryLayer.setStyle(countryStyle);markers.clearLayers();
     [...visited].forEach(code=>{if(!locations[code])return;const marker=L.marker(locations[code].latlng,{icon:markerIcon,title:`${names.of(code)} — đã đến`,alt:`${names.of(code)} — đã đến`,keyboard:true}).addTo(markers);marker.on('click',()=>showCountry(code,false));});
     if(selectedCode && map._popup)showCountry(selectedCode,false);
