@@ -10,7 +10,7 @@ let database;
 let editingId = null;
 let retainedPhotos = [];
 let busy = false;
-let journalGroup = 'vietnam';
+let journalGroup = 'abroad';
 const inGroup = code => journalGroup === 'vietnam' ? code === 'VN' : code !== 'VN';
 
 function openDatabase() {
@@ -59,12 +59,12 @@ async function mutate(action, message) {
   finally { setBusy(false); }
 }
 function render() {
-  window.dispatchEvent(new CustomEvent('journal:updated', { detail: { countries: [...state.countries], ready: Boolean(database) } }));
+  window.dispatchEvent(new CustomEvent('journal:updated', { detail: { countries: [...state.countries], ready: Boolean(database), vietnamMemories: state.memories.filter(m => m.country === 'VN').length } }));
   document.querySelector('#country-count').textContent = state.countries.filter(code => code !== 'VN').length;
   const memories = state.memories.filter(m => inGroup(m.country));
   const visited = state.countries.filter(inGroup);
   document.querySelectorAll('[data-journal-group]').forEach(button => { const active = button.dataset.journalGroup === journalGroup; button.classList.toggle('active', active); button.setAttribute('aria-pressed', String(active)); });
-  document.querySelector('#journal-group-status').textContent = `${journalGroup === 'vietnam' ? 'Việt Nam' : 'Nước ngoài'} · ${memories.length} kỷ niệm`;
+  document.querySelector('#journal-group-status').textContent = `${journalGroup === 'vietnam' ? 'Việt Nam' : 'Quốc tế'} · ${memories.length} kỷ niệm`;
   const countrySelect = document.querySelector('#visited-country');
   const selectedCountry = countrySelect.value;
   countrySelect.innerHTML = countries.filter(c => inGroup(c.code)).map(c => `<option value="${c.code}">${escapeHTML(c.name)}</option>`).join('');
@@ -121,7 +121,7 @@ function exportAlbum(memories, selected = false) {
 export async function mountJournal() {
   const section = document.createElement('section'); section.id='my-journal'; section.className='section personal-journal';
   const options = countries.map(c=>`<option value="${c.code}">${escapeHTML(c.name)}</option>`).join('');
-  section.innerHTML = `<div class="container"><div class="journal-heading"><div><p class="eyebrow">ĐI THÌ ĐỞN · NHỚ THÌ GHI</p><h2>Chân đi khắp chốn.<br><em>Chuyện cất ở đây.</em></h2><p>Ảnh không để mốc, chuyện không để quên. Gom hết vào ngăn này nhé.</p></div><button id="add-memory" class="button blue">Viết kỷ niệm +</button></div><div class="journal-stats"><div><strong id="country-count">0</strong><span>nước ngoài đã đến</span></div><div><strong id="memory-count">0</strong><span>tổng kỷ niệm đã lưu</span></div><div><strong id="photo-count">0</strong><span>tổng ảnh hành trình</span></div><p>Ghim thì bé xíu.<br>Chuyện thì cả kho.</p></div><div class="storage-notice"><strong>Nhật ký riêng trên trình duyệt này</strong><p>Ảnh và bài viết chưa được đưa lên mạng hoặc đồng bộ thiết bị. Xóa dữ liệu trình duyệt có thể làm mất nhật ký. Hãy tải bản sao lưu sau khi thêm kỷ niệm. Ảnh được tối ưu kích thước; giữ bản gốc ở nơi khác.</p></div><div class="journal-group-bar"><div class="filters journal-group-filters" aria-label="Chọn nhóm nhật ký"><button data-journal-group="vietnam" class="active" aria-pressed="true">Việt Nam</button><button data-journal-group="abroad" aria-pressed="false">Nước ngoài</button></div><p id="journal-group-status" role="status"></p></div><div class="passport"><div><h3>Sổ điểm danh những lần ham đi</h3><p>Bộ đếm nước ngoài không gồm Việt Nam. Một nước chỉ tính một lần, dù bạn quay lại nhiều lần.</p></div><form id="country-form"><label class="sr-only" for="visited-country">Quốc gia đã đến</label><select id="visited-country">${options}</select><button class="button green-button">Đã đến +</button></form><div id="visited-countries"></div></div><div class="journal-tools"><h3>Ngăn này toàn chuyện để nhớ</h3><div><button id="backup-journal">Tải bản sao lưu</button><button id="import-journal">Nhập bản sao lưu</button><button id="share-journal">Xuất album chia sẻ ↗</button><input id="backup-file" type="file" accept="application/json,.json" hidden></div></div><p id="journal-status" role="status" aria-live="polite"></p><div id="memory-grid"></div></div>`;
+  section.innerHTML = `<div class="container"><div class="journal-heading"><div><p class="eyebrow">ĐI THÌ ĐỞN · NHỚ THÌ GHI</p><h2>Chân đi khắp chốn.<br><em>Chuyện cất ở đây.</em></h2><p>Ảnh không để mốc, chuyện không để quên. Gom hết vào ngăn này nhé.</p></div><button id="add-memory" class="button blue">Viết kỷ niệm +</button></div><div class="journal-stats"><div><strong id="country-count">0</strong><span>nước ngoài đã đến</span></div><div><strong id="memory-count">0</strong><span>tổng kỷ niệm đã lưu</span></div><div><strong id="photo-count">0</strong><span>tổng ảnh hành trình</span></div><p>Ghim thì bé xíu.<br>Chuyện thì cả kho.</p></div><div class="storage-notice"><strong>Nhật ký riêng trên trình duyệt này</strong><p>Ảnh và bài viết chưa được đưa lên mạng hoặc đồng bộ thiết bị. Xóa dữ liệu trình duyệt có thể làm mất nhật ký. Hãy tải bản sao lưu sau khi thêm kỷ niệm. Ảnh được tối ưu kích thước; giữ bản gốc ở nơi khác.</p></div><div class="journal-group-bar"><div class="filters journal-group-filters" aria-label="Chọn nhóm nhật ký"><button data-journal-group="vietnam" class="active" aria-pressed="true">Việt Nam</button><button data-journal-group="abroad" aria-pressed="false">Quốc tế</button></div><p id="journal-group-status" role="status"></p></div><div class="passport"><div><h3>Sổ điểm danh những lần ham đi</h3><p>Bộ đếm nước ngoài không gồm Việt Nam. Một nước chỉ tính một lần, dù bạn quay lại nhiều lần.</p></div><form id="country-form"><label class="sr-only" for="visited-country">Quốc gia đã đến</label><select id="visited-country">${options}</select><button class="button green-button">Đã đến +</button></form><div id="visited-countries"></div></div><div class="journal-tools"><h3>Ngăn này toàn chuyện để nhớ</h3><div><button id="backup-journal">Tải bản sao lưu</button><button id="import-journal">Nhập bản sao lưu</button><button id="share-journal">Xuất album chia sẻ ↗</button><input id="backup-file" type="file" accept="application/json,.json" hidden></div></div><p id="journal-status" role="status" aria-live="polite"></p><div id="memory-grid"></div></div>`;
   document.querySelector('#about').before(section);
   document.body.insertAdjacentHTML('beforeend', `<dialog id="memory-dialog" aria-labelledby="memory-editor-heading"><button class="dialog-close" type="button" aria-label="Đóng biểu mẫu">×</button><form id="memory-form"><p class="eyebrow">MỞ NGĂN NHỚ · CẤT CHUYỆN VUI</p><h2 id="memory-editor-heading">Cất một chuyến đi vào đây</h2><label>Tên kỷ niệm<input name="title" required maxlength="120" placeholder="Ngày đầu tiên ở Nhật Bản…"></label><div class="memory-form-row"><label>Quốc gia<select name="country" required>${options}</select></label><label>Ngày chuyến đi<input name="date" type="date"></label></div><label>Kỷ niệm của bạn<textarea name="story" rows="5" maxlength="20000" placeholder="Chuyến này vui gì, lạc đâu, có chuyện gì kể hoài không chán?"></textarea></label><label>Kinh nghiệm muốn chia sẻ<textarea name="tips" rows="4" maxlength="10000" placeholder="Món nào đáng thử, đường nào dễ lạc, mẹo nào ước gì biết sớm hơn…"></textarea></label><label>Ảnh kỷ niệm<input name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label><p class="photo-help">Tối đa 12 ảnh mỗi kỷ niệm, mỗi ảnh tối đa 15 MB. Hỗ trợ JPG, PNG, WebP. Ảnh được thu nhỏ tối đa 1600 px để tiết kiệm dung lượng.</p><div id="retained-photos"></div><p id="memory-save-status" role="status"></p><button class="button blue" type="submit">Lưu kỷ niệm</button></form></dialog><dialog id="memory-view" aria-label="Chi tiết kỷ niệm"><button class="dialog-close" type="button" aria-label="Đóng kỷ niệm">×</button><div class="memory-view-body"></div></dialog>`);
   render(); setBusy(true);
@@ -136,10 +136,12 @@ export async function mountJournal() {
     });
     // Merge once: preserve personal entries, avoid duplicates, and respect later removals.
     if(!seeded) await persist({...state,countries:[...new Set([...state.countries,...Object.keys(visitedPlaces)])]},visitedPlacesVersion);
-    journalGroup = 'abroad';
+    journalGroup = document.querySelector('.travel-map-hero').dataset.region === 'vietnam' ? 'vietnam' : 'abroad';
     render(); setBusy(false);
   }
   catch { announce('Không mở được kho lưu trữ. Hãy bật quyền lưu trữ, kiểm tra chế độ riêng tư hoặc thử trình duyệt khác. Nhật ký hiện chưa sẵn sàng.'); return; }
+  window.addEventListener('travel:region', event => { if(busy) return; journalGroup = event.detail.region === 'vietnam' ? 'vietnam' : 'abroad'; render(); });
+  window.addEventListener('map:write-vietnam', () => { if(busy) return; journalGroup = 'vietnam'; render(); openEditor(); });
   document.querySelectorAll('[data-journal-group]').forEach(button => button.addEventListener('click', () => { journalGroup = button.dataset.journalGroup; render(); }));
   window.addEventListener('map:show-journal', event => {
     if (busy || !codes.includes(event.detail?.code)) return;

@@ -57,3 +57,12 @@ Mặc định phần đầu trang hiển thị địa cầu WebGL với ảnh b�
 - 3D được tải theo mô-đun riêng. Vòng dựng hình được tạm dừng khi khu vực địa cầu ở ngoài màn hình, tab bị ẩn hoặc chuyển sang 2D. Hiệu ứng tỏa vòng bị tắt với tùy chọn giảm chuyển động; ghim và bộ đếm vẫn giữ nguyên.
 
 Địa cầu và hình ảnh có thể tải chậm hơn bản đồ phẳng trên máy yếu; có thể chủ động dùng 2D. Xem `THIRD_PARTY_NOTICES.md` cho nguồn dữ liệu/ảnh và giấy phép.
+
+## Hai khu vực Quốc tế và Việt Nam
+
+Hai nút ở đầu trang và hai mục trên menu chuyển giữa:
+
+- **Quốc tế:** địa cầu 3D, bản đồ thế giới 2D dự phòng, ghim chỉ các nước ngoài đã đến. Bộ đếm loại Việt Nam và trình chọn chỉ chứa các nước ngoài.
+- **Việt Nam:** bản đồ riêng với hình dạng đường bờ biển chi tiết từ Natural Earth 1:10m; có phóng to, thu nhỏ và về toàn Việt Nam. Một số địa danh là nhãn định hướng, không phải các nơi tác giả đã đến. Màu vàng và dấu đại diện chỉ thể hiện Việt Nam đã được đánh dấu, không xác nhận đã ghé một thành phố cụ thể. Bộ đếm trong mục này là số kỷ niệm Việt Nam đã lưu, không phải số tỉnh/thành đã đến.
+
+Nhật ký chuyển nhóm theo khu vực đang chọn. Nút **Viết chuyến đi Việt Nam** mở biểu mẫu với quốc gia Việt Nam. Lưu/xóa kỷ niệm cập nhật bộ đếm tương ứng; không ảnh hưởng bộ đếm nước ngoài. Không thay đổi dữ liệu cũ hoặc tự tạo kỷ niệm trong nước. Cả hai bản đồ đều vẫn dùng dữ liệu lưu trong trình duyệt, chưa đồng bộ trực tuyến.

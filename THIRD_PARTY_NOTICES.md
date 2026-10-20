@@ -7,3 +7,5 @@
 
 - 3D globe: [globe.gl](https://github.com/vasturiano/globe.gl), three-globe and Three.js, MIT licenses (see installed package licenses).
 - Earth photographic texture: `public/images/earth-blue-marble.jpg`, distributed in the [three-globe examples](https://github.com/vasturiano/three-globe/tree/master/example/img), NASA Blue Marble imagery. This is a static illustration of Earth's surface, not live satellite imagery. See [NASA Visible Earth](https://visibleearth.nasa.gov/collection/1484/blue-marble).
+
+- Detailed Vietnam outline: `src/vietnam-boundary.json`, extracted from Natural Earth Vector `ne_10m_admin_0_countries.geojson` (public domain, Natural Earth 1:10m). This is a country outline, not a current province-level administrative map. The separately drawn city labels are reference locations and are not visited-place records.
