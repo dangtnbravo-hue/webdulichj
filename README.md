@@ -19,7 +19,7 @@ npm run preview
 
 ## Hai khu vực
 
-- **Quốc tế:** địa cầu 3D 360°, ảnh Trái Đất, tô vàng các nước đã đến, ghim có tên nước và điểm đã ghé. Có bản đồ phẳng nhiều màu, tự dự phòng khi không có WebGL2.
+- **Quốc tế:** địa cầu 3D 360°, ảnh Trái Đất, tô vàng các nước đã đến, 11 ghim thành phố/khu vực thuộc 7 nước đã ghé; các điểm gần nhau gom cụm khi thu nhỏ. Chọn tên trong danh sách hoặc trong bảng quốc gia để xoay tới từng nơi (gồm Lệ Giang, Côn Minh, Shangri-La và Bangkok). Tọa độ đại diện địa danh, không phải GPS chuyến đi; Fuji là khu vực. Quốc gia mới chưa có thành phố dùng ghim đại diện quốc gia. Có bản đồ phẳng nhiều màu, tự dự phòng khi không có WebGL2.
 - **Việt Nam:** bản đồ riêng với đường bờ biển Natural Earth 1:10m. Có 20 địa điểm đã đến do tác giả cung cấp, ghim và cụm ghim có thể bấm để khám phá. Bộ đếm Việt Nam tính địa điểm trong danh sách này, không làm tăng số nước ngoài. Các nhãn nền trung tính chỉ để định hướng.
 
 Danh sách ban đầu trong `src/visited-places.js`: Indonesia — Jakarta; Malaysia — Kuala Lumpur; Campuchia — Phnom Penh, Siem Reap; Singapore; Thái Lan; Nhật Bản — Tokyo, Fuji; Trung Quốc — Lệ Giang. Tổng cộng 7 nước ngoài. Không tự tạo ngày đi, ảnh hoặc trải nghiệm thực tế.
