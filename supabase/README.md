@@ -35,7 +35,7 @@ Chọn môi trường **Production** (và Preview nếu muốn thử). Lưu rồ
 
 ## 4. Đăng bài
 
-Mở website → cuối trang **Góc riêng của Đôn · Quản trị**, đăng nhập bằng tài khoản bước 2.
+Mở website → cuối trang **Góc riêng của Đôn · Quản trị**, đăng nhập bằng tài khoản bước 2. Ngay trong khung quản trị có **Viết bài & thêm ảnh**, **Xem bản nháp** và **Đăng nhật ký công khai**; không cần tìm nút viết bài ở phần nhật ký phía trên.
 
 - **Lưu kỷ niệm**: lưu bản nháp trên trình duyệt, chưa gửi ảnh hay nội dung lên Supabase.
 - **Đăng nhật ký công khai**: có xác nhận, đưa **toàn bộ bản nháp hiện tại** (bài viết, ảnh, danh sách quốc gia) lên website. Hiện chưa có đăng riêng từng bài.
