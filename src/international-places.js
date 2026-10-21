@@ -27,3 +27,6 @@ export function confirmedGlobePlaces(codes){
   const visited=new Set(codes);
   return internationalPlaces.filter(place=>visited.has(place.code)&&place.name.trim()&&Number.isFinite(place.lat)&&Number.isFinite(place.lng));
 }
+
+// Use the same confirmed destination registry for the globe and its country counter.
+export function confirmedForeignCountries(codes){return [...new Set(confirmedGlobePlaces(codes).map(place=>place.code))];}

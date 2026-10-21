@@ -64,8 +64,9 @@ Hiệu năng địa cầu: chỉ dựng hình 11 vùng đã ghi nhận thay vì 
 
 Khi chọn thành phố có ranh giới, camera 3D/2D phóng vừa toàn bộ hình học vùng; không kéo giãn mảng màu để làm địa danh lớn giả. Bảng chi tiết ghi diện tích ước tính từ ranh giới bản đồ và tên phạm vi đang tô (ví dụ Địch Khánh cho Shangri-La). Đây là diện tích theo nguồn hình học minh họa, có thể gồm mặt nước và khác số liệu hành chính chính thức. Singapore có đường bao quốc gia (gồm vùng nước ven bờ theo nguồn); diện tích phạm vi này không phải chỉ diện tích đất liền. Fuji có ranh giới đô thị MLIT 2020.
 
-Mỗi vùng có thẻ SVG xem trước, chuẩn hóa riêng kích thước để dễ nhận ra hình dáng; không dùng kích thước các thẻ để so sánh diện tích. Nhãn ghim luôn hiện tên/màu, kể cả khi vùng quá nhỏ ở góc nhìn toàn cầu.
 
 Hướng dẫn dành cho chủ website: mở `/huong-dan-dang-bai.html` trên website, hoặc liên kết **Cách đăng bài & xem minh họa** sau khi đăng nhập quản trị. Có các bước đăng thật, vị trí hiển thị từng trường và ví dụ tương tác không đăng nội dung.
 
 Điện thoại dùng một WebGL context với pixel ratio 1 và không khử răng cưa để giảm tải GPU. Khi context mất, bản đồ chuyển 2D, giải phóng renderer cũ và cho phép thử lại bằng nút Địa cầu 3D. WebGL2 vẫn là yêu cầu của Three.js; thiết bị/trình duyệt không hỗ trợ không thể được đảm bảo chạy 3D. Các kiểm tra di động là mô phỏng Chromium, không thay thế kiểm tra trên thiết bị thật.
+
+Bộ đếm quốc tế trên bản đồ và trong quản trị dùng cùng danh sách địa điểm tác giả đã xác nhận (`src/international-places.js`): hiện là 7 nước, không gồm Việt Nam. Mã quốc gia dư trong dữ liệu cũ không tạo ghim hoặc làm tăng bộ đếm; không xóa bài, ảnh hay dữ liệu cũ. Khi tác giả cung cấp địa điểm mới, cập nhật danh sách này để bộ đếm tự tính nước mới, không đặt cứng số 7. Dãy ô hình xem trước vùng đã được bỏ theo yêu cầu; vẫn giữ màu, ranh giới và tìm địa điểm trên bản đồ.

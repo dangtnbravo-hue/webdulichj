@@ -25,3 +25,12 @@ test('globe never invents country-centre pins or anonymous destinations',async()
  assert.deepEqual(confirmedGlobePlaces(['US','VN','ZZ']),[]);
  assert.equal(confirmedGlobePlaces(['CN','CN']).length,3);
 });
+
+test('foreign counters share the pin registry: seven confirmed countries, excluding Vietnam, duplicates and stale extras',async()=>{
+ const {confirmedForeignCountries}=await import('../src/international-places.js');
+ const saved=['ID','MY','KH','SG','TH','JP','CN','VN','US','US','ZZ','CN'];
+ assert.deepEqual(confirmedForeignCountries(saved),['ID','MY','KH','SG','TH','JP','CN']);
+ assert.equal(confirmedForeignCountries(saved).length,7);
+ assert.deepEqual(confirmedForeignCountries(['VN','US']),[]);
+ assert.deepEqual(confirmedForeignCountries(['JP','JP','CN']),['JP','CN']);
+});

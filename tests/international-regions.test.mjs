@@ -38,12 +38,3 @@ test('area metadata reflects full geographic regions and camera fitting preserve
   assert.equal(JSON.stringify(region),before,'camera fitting must not enlarge geographic geometry');
  }
 });
-
-
-test('every destination has a nonempty outline preview without losing geographic components',async()=>{
- const {regionPreviewPaths}=await import('../src/international-regions.js');
- for(const region of features){const before=JSON.stringify(region),paths=regionPreviewPaths(region);assert.ok(paths.length>0);assert.ok(paths.every(p=>p.startsWith('M')&&!p.includes('NaN')&&!p.includes('Infinity')));assert.equal(paths.length,region.geometry.type==='Polygon'?1:region.geometry.coordinates.length);assert.equal(JSON.stringify(region),before);}
- const fuji=features.find(f=>f.properties.regionId==='JP-22210');assert.ok(fuji.properties.areaKm2>240&&fuji.properties.areaKm2<250);
-});
-
-test('Tokyo preview gives the mainland a visible inset without moving actual islands',async()=>{const {regionPreviewLayout}=await import('../src/international-regions.js');const tokyo=features.find(f=>f.properties.regionId==='JP-13');const before=JSON.stringify(tokyo);assert.equal(regionPreviewLayout(tokyo).inset,true);assert.equal(regionPreviewLayout(features.find(f=>f.properties.code==='SG')).inset,false);assert.equal(JSON.stringify(tokyo),before);});

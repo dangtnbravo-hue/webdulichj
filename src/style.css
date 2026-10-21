@@ -53,18 +53,11 @@
 .international-region-controls small{font-size:11px;color:#547686}
 .country-map-popup .region-area{font-weight:700;color:#146b67;margin-bottom:5px}
 .country-map-popup>small{display:block;color:#607b87;font-size:11px;line-height:1.5;margin-bottom:10px}
-#international-region-previews{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 22px}
-#international-region-previews button{display:flex;flex-direction:column;align-items:center;min-width:0;gap:5px;border:1px solid #cbe0e6;border-top:4px solid var(--region-color);border-radius:10px;background:white;padding:10px 8px;color:#214d64;cursor:pointer}
-#international-region-previews button:hover,#international-region-previews button:focus-visible{background:#eaf6f5;outline:2px solid var(--region-color);outline-offset:1px}
-#international-region-previews svg{width:100%;height:104px;max-width:180px;filter:drop-shadow(0 2px 2px #163f5122)}
-#international-region-previews strong{font-size:13px;text-align:center}
-#international-region-previews span{font-size:10px;color:#4a6e7b}
 .globe-country-pin{background:var(--place-color,#ffbe42);box-shadow:0 0 0 3px #ffffff33}
 .globe-country-pin .globe-city-name{opacity:1;background:var(--place-color,#10364e);color:#123442;border:1px solid #ffffffd0;box-shadow:0 2px 6px #0004;font-weight:700}
 .globe-country-pin[data-country-code=SG] .globe-city-name{top:0;left:calc(100% + 7px);transform:none}
 .globe-country-pin[data-country-code=MY] .globe-city-name{top:0;left:auto;right:calc(100% + 7px);transform:none}
 .globe-country-pin[data-country-code=TH] .globe-city-name{top:auto;bottom:calc(100% + 5px)}
-.region-preview-note{font-size:12px;color:#547686;margin:0 0 12px;line-height:1.6}
 .globe-country-pin[data-country-code=CN] .globe-city-name{top:0;left:auto;right:calc(100% + 7px);transform:none}
 /* Keep the name inside its pin so a detached label cannot leave an anonymous tick. */
 .globe-country-pin{display:inline-flex;align-items:center;gap:5px;width:max-content;max-width:190px;min-height:28px;height:auto;padding:4px 8px;border-radius:16px;font-size:13px;white-space:nowrap}

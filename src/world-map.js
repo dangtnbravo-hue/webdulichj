@@ -1,5 +1,5 @@
-import {loadInternationalRegions,regionHasVisit,regionColor,regionPlaces,visitedRegions,regionPreviewLayout} from './international-regions.js';
-import { internationalPlaces, internationalMapPoints } from './international-places.js';
+import {loadInternationalRegions,regionHasVisit,regionColor,regionPlaces,visitedRegions} from './international-regions.js';
+import { internationalPlaces, internationalMapPoints, confirmedForeignCountries } from './international-places.js';
 import { vietnamPlaces } from './vietnam-places.js';
 import { visitedPlaces } from './visited-places.js';
 import { createVietnamMap } from './vietnam-map.js';
@@ -43,7 +43,7 @@ let vietnamMemories=0;
 let selectedCode, selectedPlace, selectedRegion;
 let internationalRegions=[], regionLayer;
 const markerIcon=L.divIcon({className:'visited-map-pin',html:'<svg viewBox="0 0 32 42" aria-hidden="true"><path d="M16 40S2 26 2 16a14 14 0 0 1 28 0c0 10-14 24-14 24Z" fill="#f2b63f" stroke="white" stroke-width="2"/><path d="m10 16 4 4 8-9" fill="none" stroke="#173e55" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',iconSize:[30,40],iconAnchor:[15,39],popupAnchor:[0,-32]});
-const foreignCodes=()=>[...visited].filter(code=>code!=='VN');
+const foreignCodes=()=>confirmedForeignCountries([...visited]);
 function countryStyle(f) {
   // Visit highlights belong to recorded regions, never a whole country.
   return {color:'#a7c5d1',weight:.7,fillColor:'#e6f0f3',fillOpacity:1};
@@ -95,29 +95,10 @@ function showInternationalRegion(feature,fly=true){
     L.popup({maxWidth:250}).setLatLng(p.center).setContent(box).openOn(map);
   }
 }
-function renderRegionPreviews(regions){
-  const gallery=document.querySelector('#international-region-previews');gallery.replaceChildren();
-  for(const region of regions){
-    const p=region.properties,button=document.createElement('button');button.type='button';button.dataset.regionPreview=p.regionId;
-    button.style.setProperty('--region-color',regionColor(region));
-    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 160 104');svg.setAttribute('aria-hidden','true');
-    const preview=regionPreviewLayout(region);
-    for(const d of preview.paths){const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',d);path.setAttribute('fill',regionColor(region));path.setAttribute('fill-rule','evenodd');svg.append(path);}
-    if(preview.inset){
-      const line=document.createElementNS(svg.namespaceURI,'path');line.setAttribute('d','M115,12 L115,93');line.setAttribute('stroke','#b7cfd8');line.setAttribute('stroke-dasharray','3 3');svg.append(line);
-      const label=document.createElementNS(svg.namespaceURI,'text');label.setAttribute('x','128');label.setAttribute('y','10');label.setAttribute('font-size','8');label.setAttribute('fill','#4a6e7b');label.textContent='Đảo';svg.append(label);
-    }
-    const title=document.createElement('strong');title.textContent=p.name;
-    const note=document.createElement('span');note.textContent=`≈ ${new Intl.NumberFormat('vi-VN').format(p.areaKm2)} km² · Xem vùng ↗`;
-    if(preview.inset){button.title='Đất chính và đảo ngoài khơi được phóng riêng trong ô xem trước.';}
-    button.append(svg,title,note);button.addEventListener('click',()=>{showInternationalRegion(region);document.querySelector(viewMode==='globe'?'#globe-stage':'#world-map').scrollIntoView({behavior:'auto',block:'center'});});gallery.append(button);
-  }
-}
 function refreshRegionOverlays(){
   if(!regionLayer)return;
   const shown=visitedRegions(internationalRegions,visited);
   regionLayer.clearLayers().addData({type:'FeatureCollection',features:shown});
-  renderRegionPreviews(shown);
   const select=document.querySelector('#international-region-select'),current=select.value;
   select.replaceChildren(new Option('Chọn một vùng Đôn đã ghé…',''));
   for(const code of [...new Set(shown.map(f=>f.properties.code))]){
