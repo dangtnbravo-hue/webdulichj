@@ -230,7 +230,7 @@ function setRegion(nextRegion) {
   refresh();
   window.dispatchEvent(new CustomEvent('travel:region',{detail:{region}}));
 }
-export function mountWorldMap() {
+export function mountWorldMap({initialRegion='international'}={}) {
   const select=document.querySelector('#map-country-select');
   countryCodes.forEach(code=>{const option=document.createElement('option');option.value=code;option.textContent=names.of(code);select.append(option);});
   map=L.map('world-map',{fadeAnimation:false,center:[18,15],zoom:1.5,minZoom:0,maxZoom:13,zoomSnap:.25,scrollWheelZoom:false,worldCopyJump:false,maxBounds:[[-85,-210],[85,210]],maxBoundsViscosity:.8});
@@ -255,5 +255,5 @@ export function mountWorldMap() {
   window.addEventListener('journal:save-error',()=>{if(selectedCode)showCountry(selectedCode,false);document.querySelector('#map-status').textContent='Chưa lưu được dấu chân. Kiểm tra quyền hoặc dung lượng lưu trữ trong nhật ký.';});
   new ResizeObserver(()=>map.invalidateSize({pan:false})).observe(document.querySelector('#world-map'));
   mountInternationalRegions();
-  setRegion('international');
+  setRegion(initialRegion);
 }
