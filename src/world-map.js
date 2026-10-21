@@ -33,7 +33,8 @@ for(const f of worldFeatures.features) {
   if(f.geometry.type==='MultiPolygon') f.geometry.coordinates=f.geometry.coordinates.map(p=>p.map(unwrapRing));
 }
 let map, countryLayer, markers, globe, globePromise, vietnamMap;
-let region='international';
+const section=document.body.dataset.section;
+let region=section||'international';
 let viewMode='globe';
 let internationalView='globe';
 let visited=new Set();
@@ -142,6 +143,7 @@ function showInternationalPlace(id,fly=true) {
   }
 }
 function showCountry(code,fly=true) {
+  if(section&&((code==='VN')!==(section==='vietnam'))){location.assign(code==='VN'?'/viet-nam/':'/the-gioi/');return;}
   if(!locations[code]) return;
   if(code==='VN'&&region!=='vietnam')setRegion('vietnam');
   if(code!=='VN'&&region==='vietnam')setRegion('international');
@@ -205,11 +207,12 @@ async function switchView(mode) {
   }
 }
 function setRegion(nextRegion) {
+  if(section&&nextRegion!==section){location.assign(nextRegion==='vietnam'?'/viet-nam/':'/the-gioi/');return;}
   region=nextRegion;selectedCode=null;selectedPlace=null;selectedRegion=null;map.closePopup();
   const domestic=region==='vietnam';
   document.querySelector('.travel-map-hero').dataset.region=region;
   document.querySelectorAll('[data-map-region]').forEach(control=>{const selected=control.dataset.mapRegion===region;control.classList.toggle('active',selected);if(control.tagName==='BUTTON')control.setAttribute('aria-pressed',String(selected));});
-  document.querySelector('#map-heading').innerHTML=domestic?'Đi dọc chữ S.<br><em>Đởn khắp quê mình.</em>':'Đôn đi đây.<br><em>Đú đởn khắp nơi.</em>';
+  document.querySelector('#map-heading').innerHTML=domestic?'Việt Nam của Đôn.<br><em>Đởn khắp quê mình.</em>':'Thế giới của Đôn.<br><em>Đú đởn khắp nơi.</em>';
   document.querySelector('#map-region-intro').textContent=domestic?'Chưa cần bay xa. Đi quanh nhà, gom cả rổ chuyện.':'Bản đồ có ghim, Đôn có chuyện. Chấm một nước, khui một kỷ niệm.';
   document.querySelector('#international-map-views').hidden=domestic;
   document.querySelector('#map-country-form').hidden=domestic;
