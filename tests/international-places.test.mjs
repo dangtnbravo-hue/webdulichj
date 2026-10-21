@@ -16,3 +16,12 @@ test('eleven confirmed international destinations retain seven countries and exa
 });
 
 test('Fuji pin is in the author-confirmed city, not at the Mount Fuji summit',()=>{const fuji=internationalPlaces.find(p=>p.id==='fuji');assert.ok(fuji.lat<35.2&&fuji.lat>35.1);});
+
+test('globe never invents country-centre pins or anonymous destinations',async()=>{
+ const {confirmedGlobePlaces}=await import('../src/international-places.js');
+ const all=confirmedGlobePlaces(['ID','MY','KH','SG','TH','JP','CN','US','VN','ZZ']);
+ assert.equal(all.length,11);assert.equal(new Set(all.map(p=>p.id)).size,11);
+ assert.ok(all.every(p=>p.name.trim()&&p.kind==='city'));
+ assert.deepEqual(confirmedGlobePlaces(['US','VN','ZZ']),[]);
+ assert.equal(confirmedGlobePlaces(['CN','CN']).length,3);
+});

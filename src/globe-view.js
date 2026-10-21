@@ -1,19 +1,18 @@
 import Globe from 'globe.gl';
 import {loadInternationalRegions,regionColor,visitedRegions,regionView} from './international-regions.js';
 import locations from './country-locations.json';
-import {internationalMapPoints} from './international-places.js';
+import {confirmedGlobePlaces} from './international-places.js';
 const names=new Intl.DisplayNames(['vi'],{type:'region'});
 export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailure}) {
-  const context=document.createElement('canvas').getContext('webgl2');
-  if(!context)throw new Error('WebGL2 unavailable');
-  context.getExtension('WEBGL_lose_context')?.loseContext();
+  // Let Three.js create the single real context; a second probe costs mobile GPU resources.
+  const mobile=window.matchMedia('(pointer: coarse)').matches;
   const regions=await loadInternationalRegions().catch(()=>[]);
   let regionKey='';
   container.dataset.regionCount='0';
   let visited=new Set(),points=[],selectedId=null,clusterKey='',frame=0;
-  let autoRotate=false,visible=true,active=true;
+  let autoRotate=false,visible=true,active=true,disposed=false;
   const motion=window.matchMedia('(prefers-reduced-motion: reduce)');
-  const globe=new Globe(container,{rendererConfig:{antialias:true,alpha:true},waitForGlobeReady:false})
+  const globe=new Globe(container,{rendererConfig:{antialias:!mobile,alpha:true,powerPreference:mobile?'low-power':'default'},waitForGlobeReady:false})
     .backgroundColor('#061b35').globeImageUrl('/images/earth-blue-marble.jpg')
     .showAtmosphere(true).atmosphereColor('#5cbfff').atmosphereAltitude(.17)
     .polygonsData([]).polygonsTransitionDuration(0)
@@ -64,16 +63,33 @@ export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailur
     globe.pointOfView(regionView(region,Math.max(.3,container.clientWidth/container.clientHeight),globe.camera().fov),motion.matches?0:650);
   }
   globe.onZoom(schedule);globe.pointOfView({lat:19,lng:107,altitude:2.25},0);
-  function refreshAnimation(){const playing=active&&visible&&!document.hidden;if(playing)globe.resumeAnimation();else globe.pauseAnimation();controls.autoRotate=autoRotate&&playing;}
-  new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;refreshAnimation();},{rootMargin:'120px'}).observe(container);
+  function refreshAnimation(){if(disposed)return;const playing=active&&visible&&!document.hidden;if(playing)globe.resumeAnimation();else globe.pauseAnimation();controls.autoRotate=autoRotate&&playing;}
+  const visibilityObserver=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;refreshAnimation();},{rootMargin:'120px'});visibilityObserver.observe(container);
   document.addEventListener('visibilitychange',refreshAnimation);
-  new ResizeObserver(()=>{if(container.clientWidth){globe.width(container.clientWidth).height(container.clientHeight);schedule();}}).observe(container);
-  globe.renderer().setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
-  globe.renderer().domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();onFailure();});
-  const textureCheck=new Image();textureCheck.onerror=()=>{globe.globeImageUrl(null);document.querySelector('#globe-feedback').textContent='Ảnh Trái Đất chưa tải được; vẫn có thể xoay và xem các vùng màu.';};textureCheck.src='/images/earth-blue-marble.jpg';
+  const sizeObserver=new ResizeObserver(()=>{if(container.clientWidth){globe.width(container.clientWidth).height(container.clientHeight);schedule();}});sizeObserver.observe(container);
+  globe.renderer().setPixelRatio(mobile?1:Math.min(window.devicePixelRatio||1,1.5));
+  function contextLost(e){e.preventDefault();destroy();onFailure();}
+  globe.renderer().domElement.addEventListener('webglcontextlost',contextLost);
+  const textureCheck=new Image();textureCheck.onerror=()=>{if(disposed)return;globe.globeImageUrl(null);document.querySelector('#globe-feedback').textContent='Ảnh Trái Đất chưa tải được; vẫn có thể xoay và xem các vùng màu.';};textureCheck.src='/images/earth-blue-marble.jpg';
+  function destroy(){
+    if(disposed)return;disposed=true;
+    visibilityObserver.disconnect();sizeObserver.disconnect();cancelAnimationFrame(frame);
+    document.removeEventListener('visibilitychange',refreshAnimation);
+    globe.renderer().domElement.removeEventListener('webglcontextlost',contextLost);
+    globe.pauseAnimation();controls.dispose();
+    const resources=new Set();
+    globe.scene().traverse(object=>{
+      if(object.geometry)resources.add(object.geometry);
+      for(const material of [object.material].flat().filter(Boolean)){
+        resources.add(material);for(const value of Object.values(material))if(value?.isTexture)resources.add(value);
+      }
+    });
+    resources.forEach(resource=>resource.dispose());globe.renderer().dispose();container.replaceChildren();
+  }
   return {
+    destroy,
     update(codes){
-      visited=new Set(codes);points=internationalMapPoints(codes,locations);
+      visited=new Set(codes);points=confirmedGlobePlaces(codes);
       if(selectedId&&!points.some(p=>p.id===selectedId))selectedId=null;
       rebuild();
       const visibleRegions=visitedRegions(regions,visited);

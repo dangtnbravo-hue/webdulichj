@@ -21,3 +21,9 @@ export function internationalMapPoints(codes,locations) {
     return [{id:`country-${code}`,code,name:names.of(code),lat,lng,kind:'country'}];
   });
 }
+
+// Globe pins represent only destinations supplied by the author, never country-centre placeholders.
+export function confirmedGlobePlaces(codes){
+  const visited=new Set(codes);
+  return internationalPlaces.filter(place=>visited.has(place.code)&&place.name.trim()&&Number.isFinite(place.lat)&&Number.isFinite(place.lng));
+}
