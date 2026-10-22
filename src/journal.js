@@ -1,3 +1,4 @@
+import {jakartaDraft} from './jakarta-draft.js';
 import {confirmedForeignCountries} from './international-places.js';
 import { trustedPhoto } from './cloud-config.js';
 import { visitedPlaces, visitedPlacesVersion } from './visited-places.js';
@@ -122,7 +123,7 @@ async function exportAlbum(memories, selected = false) {
   const html = `<!doctype html><html lang="vi"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Nhật ký hành trình · Đôn Đú Đởn</title><style>body{margin:0;background:#f4f8fa;color:#18344a;font:16px/1.8 system-ui,sans-serif}main{max-width:850px;margin:auto;padding:40px 22px}header{padding:30px 0;border-bottom:3px solid #249957}h1,h2{line-height:1.4}h1{color:#087cbd}article{background:white;padding:28px;border-radius:12px;margin:28px 0}h3{color:#249957}p{white-space:pre-wrap;overflow-wrap:anywhere}img{max-width:100%;height:auto;border-radius:8px;display:block;margin:15px auto}.meta{font-size:13px;color:#607a86}footer{font-size:12px;color:#607a86}</style><main><header><div>ĐÔN ĐÚ ĐỞN · NHẬT KÝ CÁ NHÂN</div><h1>Đi để nhớ. Kể để kết nối.</h1><p>${visited.filter(code => code !== 'VN').length} nước ngoài đã đến${visited.includes('VN') ? ' · Có hành trình Việt Nam' : ''} · ${memories.length} kỷ niệm</p><p class="meta">${escapeHTML(visited.map(countryName).join(' · '))}</p></header>${memories.map(m=>`<article><div class="meta">${escapeHTML(countryName(m.country))}${m.date ? ` · ${escapeHTML(m.date)}` : ''}</div><h2>${escapeHTML(m.title)}</h2>${m.story ? `<h3>Kỷ niệm</h3><p>${escapeHTML(m.story)}</p>` : ''}${m.tips ? `<h3>Kinh nghiệm muốn chia sẻ</h3><p>${escapeHTML(m.tips)}</p>` : ''}${m.photos.map((p,i)=>`<img src="${p}" alt="${escapeHTML(m.title)} — ảnh ${i+1}">`).join('')}</article>`).join('')}<footer>Album cá nhân được xuất từ Đôn Đú Đởn. Tệp chứa ảnh để xem mà không cần kết nối Internet.</footer></main></html>`;
   download('don-du-don-album.html',html,'text/html;charset=utf-8'); announce('Đã xuất album HTML. Bạn có thể gửi tệp cho người thân; đây chưa phải đường link công khai.');
 }
-export async function mountJournal({ onPublish, onRestore } = {}) {
+export async function mountJournal({ onPublish, onRestore, initialContent } = {}) {
   const section = document.createElement('section'); section.id='my-journal'; section.className='section personal-journal';
   const options = countries.filter(c=>!pageSection||(pageSection==='vietnam'?c.code==='VN':c.code!=='VN')).map(c=>`<option value="${c.code}">${escapeHTML(c.name)}</option>`).join('');
   section.innerHTML = `<div class="container"><div class="journal-heading"><div><p class="eyebrow">ĐI THÌ ĐỞN · NHỚ THÌ GHI</p><h2>Chân đi khắp chốn.<br><em>Chuyện cất ở đây.</em></h2><p>Ảnh không để mốc, chuyện không để quên. Gom hết vào ngăn này nhé.</p></div><button id="add-memory" class="button blue">Viết kỷ niệm +</button></div><div class="journal-stats"><div><strong id="country-count">0</strong><span>nước ngoài đã đến</span></div><div><strong id="memory-count">0</strong><span>tổng kỷ niệm đã lưu</span></div><div><strong id="photo-count">0</strong><span>tổng ảnh hành trình</span></div><p>Ghim thì bé xíu.<br>Chuyện thì cả kho.</p></div><div class="storage-notice"><strong>Bản nháp riêng trên trình duyệt này</strong><p>Ảnh và bài viết chưa được đưa lên mạng hoặc đồng bộ thiết bị. Xóa dữ liệu trình duyệt có thể làm mất nhật ký. Hãy tải bản sao lưu sau khi thêm kỷ niệm. Ảnh được tối ưu kích thước; giữ bản gốc ở nơi khác.</p></div><div class="journal-group-bar"><div class="filters journal-group-filters" aria-label="Chọn nhóm nhật ký"><button data-journal-group="vietnam" class="active" aria-pressed="true">Việt Nam</button><button data-journal-group="abroad" aria-pressed="false">Quốc tế</button></div><p id="journal-group-status" role="status"></p></div><div class="passport"><div><h3>Sổ điểm danh những lần ham đi</h3><p>Bộ đếm tính các nước có địa điểm đã xác nhận trên bản đồ, không gồm Việt Nam. Một nước chỉ tính một lần.</p></div><form id="country-form"><label class="sr-only" for="visited-country">Quốc gia đã đến</label><select id="visited-country">${options}</select><button class="button green-button">Đã đến +</button></form><div id="visited-countries"></div></div><div class="journal-tools"><h3>Ngăn này toàn chuyện để nhớ</h3><div><button id="backup-journal">Tải bản sao lưu</button><button id="import-journal">Nhập bản sao lưu</button><button id="share-journal">Xuất album chia sẻ ↗</button><input id="backup-file" type="file" accept="application/json,.json" hidden></div></div><p id="journal-status" role="status" aria-live="polite"></p><div id="memory-grid"></div></div>`;
@@ -139,6 +140,12 @@ export async function mountJournal({ onPublish, onRestore } = {}) {
     database = await openDatabase();
     const stored = await loadState();
     if(stored) state = validState(stored);
+    // Preserve local edits while bringing in public articles missing on this device.
+    if(initialContent){
+      const incoming=validState(initialContent);
+      const localIds=new Set(state.memories.map(m=>m.id));
+      await persist(validState({...state,countries:[...new Set([...state.countries,...incoming.countries])],memories:[...state.memories,...incoming.memories.filter(m=>!localIds.has(m.id))]}));
+    }
     const seeded = await new Promise((resolve,reject) => {
       const request = database.transaction('journal','readonly').objectStore('journal').get(visitedPlacesVersion);
       request.onsuccess = () => resolve(request.result);
@@ -186,7 +193,17 @@ export async function mountJournal({ onPublish, onRestore } = {}) {
     finally{setBusy(false);}
   });
   if(onPublish) {
-    const bar=document.createElement('div');bar.className='owner-publish-bar';bar.innerHTML='<strong>Bản nháp trên thiết bị của Đôn</strong><p>Lưu kỷ niệm chỉ lưu nháp. Nút Đăng công khai sẽ đưa TOÀN BỘ nhật ký của cả Việt Nam và Thế giới, gồm ảnh và danh sách quốc gia, lên website cho mọi người xem.</p><div><button id="publish-journal" type="button" class="button blue">Đăng nhật ký công khai</button><button id="restore-published" type="button">Nhập nội dung đã đăng về bản nháp</button></div>';section.querySelector('.container').prepend(bar);
+    const bar=document.createElement('div');bar.className='owner-publish-bar';bar.innerHTML='<strong>Bản nháp trên thiết bị của Đôn</strong><p>Lưu kỷ niệm chỉ lưu nháp. Nút Đăng công khai sẽ đưa TOÀN BỘ nhật ký của cả Việt Nam và Thế giới, gồm ảnh và danh sách quốc gia, lên website cho mọi người xem.</p><div><button id="publish-journal" type="button" class="button blue">Đăng nhật ký công khai</button><button id="edit-jakarta" type="button">Sửa bài Jakarta & thêm ảnh</button><button id="restore-published" type="button">Nhập nội dung đã đăng về bản nháp</button></div>';section.querySelector('.container').prepend(bar);
+    document.querySelector('#edit-jakarta').hidden=pageSection==='vietnam';
+    document.querySelector('#edit-jakarta').addEventListener('click',async()=>{
+      if(busy)return;
+      let memory=state.memories.find(m=>m.id===jakartaDraft.id);
+      if(!memory){
+        await mutate(()=>persist(validState({...state,countries:[...new Set([...state.countries,'ID'])],memories:[structuredClone(jakartaDraft),...state.memories]})),'Đã nhập bài Jakarta vào bản nháp. Thêm ảnh rồi lưu và đăng công khai.');
+        memory=state.memories.find(m=>m.id===jakartaDraft.id);
+      }
+      if(memory)openEditor(memory);
+    });
     document.querySelector('#publish-journal').addEventListener('click',async()=>{if(busy)return;if(!window.confirm('Đăng TOÀN BỘ nhật ký này công khai, gồm ảnh, câu chuyện, kinh nghiệm và quốc gia? Mọi người sẽ xem được nội dung sau khi đăng.'))return;setBusy(true);announce('Đang tải ảnh và đăng nhật ký…');try{await onPublish(validState(structuredClone(state)));announce('Đã đăng công khai. Khách mở website sẽ thấy bản vừa đăng.');}catch(error){announce(error.message||'Chưa đăng được. Bản nháp trên thiết bị vẫn còn.');}finally{setBusy(false);}});
     document.querySelector('#restore-published').addEventListener('click',async()=>{if(busy||!window.confirm('Nhập nội dung công khai và gộp vào bản nháp? Bài có cùng mã sẽ được thay bằng nội dung đã đăng. Hãy sao lưu nếu muốn giữ bản nháp cũ.'))return;await mutate(async()=>{const incoming=validState(await onRestore());const memories=new Map(state.memories.map(m=>[m.id,m]));incoming.memories.forEach(m=>memories.set(m.id,m));await persist(validState({version:1,countries:[...new Set([...state.countries,...incoming.countries])],memories:[...memories.values()]}));},'Đã nhập nội dung công khai về bản nháp.');});
   }

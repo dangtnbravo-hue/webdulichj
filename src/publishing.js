@@ -1,4 +1,5 @@
 import {requestedContinent,countryInContinent} from './continents.js';
+import {jakartaDraft} from './jakarta-draft.js';
 import {siteArticles} from './site-articles.js';
 import { cloudClient, cloudConfigured, trustedPhoto } from './cloud-config.js';
 import { mountJournal, validState, viewMemory } from './journal.js';
@@ -24,7 +25,7 @@ function renderPublic(){
   const memories=published.memories.filter(m=>(region==='vietnam'?m.country==='VN':m.country!=='VN')&&countryInContinent(m.country,selectedContinent));
   const query=(document.querySelector('#public-search').value||'').toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d');
   const filtered=memories.filter(m=>`${m.title} ${m.story} ${m.tips}`.toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').includes(query));
-  const editorial=siteArticles.filter(a=>(region==='vietnam'?a.country==='VN':a.country!=='VN')&&countryInContinent(a.country,selectedContinent)&&`${a.title} ${a.excerpt}`.toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').includes(query));
+  const editorial=siteArticles.filter(a=>!published.memories.some(m=>m.id===jakartaDraft.id)&&(region==='vietnam'?a.country==='VN':a.country!=='VN')&&countryInContinent(a.country,selectedContinent)&&`${a.title} ${a.excerpt}`.toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').includes(query));
   document.querySelector('#public-memory-status').textContent=`${selectedContinent?.name||(region==='vietnam'?'Việt Nam':'Thế giới')} · ${filtered.length+editorial.length} bài viết công khai`;
   section.innerHTML=filtered.length?filtered.map(m=>`<article class="memory-card">${m.photos[0]?`<button class="memory-cover" data-read-published="${m.id}" aria-label="Đọc ${escape(m.title)}"><img src="${m.photos[0]}" alt="${escape(m.title)}" loading="lazy"></button>`:'<div class="memory-no-photo">ĐI CÓ HỘI · KỂ CÓ ĐÔN</div>'}<div class="memory-card-body"><p class="memory-meta">${escape(names.of(m.country))}${m.date?` · ${escape(m.date)}`:''}</p><h3><button data-read-published="${m.id}">${escape(m.title)}</button></h3><p class="memory-excerpt">${escape(m.story||m.tips)}</p><button class="read-more" data-read-published="${m.id}">Nghe Đôn kể ↗</button></div></article>`).join(''):'<div class="journal-empty"><h3>Chuyện đang được Đôn gom góp.</h3><p>Chưa có bài công khai phù hợp trong mục này. Ghé lại hóng chuyện sau nhé.</p></div>';
   if(!filtered.length&&!editorial.length&&selectedContinent){
@@ -91,7 +92,7 @@ async function publishSnapshot(content){
 }
 async function mountOwner(){
   readerEvents.abort();document.querySelector('#my-journal')?.remove();document.querySelector('#memory-view')?.remove();
-  owner=true;if(selectedContinent)mountPublic();else await mountJournal({onPublish:publishSnapshot,onRestore:async()=>{const result=await readPublished();published=result.content;revision=result.revision;return published;}});
+  owner=true;if(selectedContinent)mountPublic();else await mountJournal({initialContent:published,onPublish:publishSnapshot,onRestore:async()=>{const result=await readPublished();published=result.content;revision=result.revision;return published;}});
   document.querySelector('#owner-login').hidden=true;document.querySelector('#owner-logout').hidden=false;document.querySelector('#owner-quick-actions').hidden=false;
   document.querySelector('#owner-quick-publish').hidden=Boolean(selectedContinent);
   if(selectedContinent){announce('Bạn đang xem các bài công khai theo châu. Bấm Viết bài & thêm ảnh hoặc Xem bản nháp để mở phần quản trị.');return;}
@@ -109,6 +110,11 @@ export async function mountPublishing(){
   document.querySelector('.search-toggle').addEventListener('click',event=>{event.stopImmediatePropagation();document.querySelector('#my-journal').scrollIntoView({behavior:'smooth'});document.querySelector('#public-search')?.focus({preventScroll:true});},{capture:true});
   const admin=document.createElement('section');admin.className='section container author-access';admin.innerHTML=`<details><summary>Góc riêng của Đôn · Quản trị</summary><p>Khách cứ đọc thoải mái. Chỉ tài khoản chủ website được đăng nội dung công khai.</p><form id="owner-login" ${cloudConfigured?'':'hidden'}><label>Email quản trị<input type="email" name="email" autocomplete="username" required></label><label>Mật khẩu<input type="password" name="password" autocomplete="current-password" required></label><button class="button blue">Đăng nhập quản trị</button></form><div id="owner-quick-actions" class="owner-quick-actions" hidden><button id="owner-quick-write" type="button" class="button blue">Viết bài & thêm ảnh +</button><button id="owner-quick-drafts" type="button">Xem bản nháp</button><button id="owner-quick-publish" type="button">Đăng nhật ký công khai</button><a href="/bai-viet/jakarta-24-27-08-2023.html" ${pageSection==='vietnam'?'hidden':''}>Xem bài Jakarta ↗</a><a href="/huong-dan-dang-bai.html" target="_blank" rel="noopener">Cách đăng bài & xem minh họa ↗</a></div><button id="owner-logout" type="button" hidden>Đăng xuất quản trị</button><p id="publishing-status" role="status"></p><button type="button" id="legacy-backup">Tải bản sao lưu cũ trên thiết bị này</button><p class="photo-help">Bản nháp cũ trên trình duyệt vẫn được giữ. Chỉ chủ website mới có thể đưa bản nháp lên trang công khai.</p></details>`;
   document.querySelector('footer').before(admin);
+  const manageLink=document.createElement('a');manageLink.href='/the-gioi/?quan-tri=1';manageLink.textContent='Viết bài / Quản trị';document.querySelector('footer').append(manageLink);
+  if(new URLSearchParams(location.search).has('quan-tri')){
+    admin.querySelector('details').open=true;
+    admin.scrollIntoView({block:'start'});
+  }
   document.querySelector('#legacy-backup').addEventListener('click',downloadLegacy);
   document.querySelector('#owner-quick-write').addEventListener('click',()=>{const target=document.querySelector('#add-memory');if(!owner)return;if(!target&&selectedContinent){location.assign('/the-gioi/#my-journal');return;}if(!target)return;if(target.disabled){announce('Bản nháp chưa sẵn sàng hoặc đang lưu. Kiểm tra thông báo trong mục Nhật ký của tôi.');return;}target.click();});
   document.querySelector('#owner-quick-drafts').addEventListener('click',()=>{if(owner&&selectedContinent){location.assign('/the-gioi/#my-journal');return;}if(owner)document.querySelector('#my-journal').scrollIntoView({behavior:'smooth',block:'start'});});

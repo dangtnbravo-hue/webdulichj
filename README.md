@@ -78,3 +78,11 @@ Trang gốc mở bằng hai lựa chọn ảnh toàn khung **Thế giới của 
 Hai phần nay có URL độc lập: `/the-gioi/` chỉ có địa cầu quốc tế (và 2D dự phòng), 7 nước ngoài, các bài/ảnh nước ngoài; `/viet-nam/` chỉ có bản đồ Việt Nam, 20 địa điểm và bài/ảnh Việt Nam. Trang `/` chỉ là hai ô lựa chọn. Vite build ba HTML entry riêng; không cần chuyển bộ lọc trong cùng trang để đổi phần. Điều hướng giữa hai phần tải trang tương ứng; logo quay về trang chọn. Liên kết cũ dạng `/#viet-nam` được chuyển sang URL mới. Nhật ký/Supabase vẫn giữ chung dữ liệu để tránh mất bài; chỉ giao diện đọc, thống kê và lựa chọn quốc gia khi viết bài được giới hạn theo trang. Thao tác Đăng công khai vẫn đăng cả snapshot theo cơ chế hiện có.
 
 Thanh menu không còn liên kết Việt Nam. Chạm/bấm **Thế giới** mở danh sách 6 châu (Á, Âu, Phi, Mỹ, Đại Dương, Nam Cực) cùng liên kết Toàn thế giới. Chọn một châu mở `/the-gioi/?chau=...#my-journal`, cuộn tới danh sách bài viết/kinh nghiệm công khai thuộc các nước ở châu đó. Châu chưa có bài hiển thị trạng thái trống. Việt Nam vẫn ở phần riêng, không trộn vào Châu Á của mục Thế giới. Mục Việt Nam vẫn vào từ trang chọn tại `/`.
+
+## Tự sửa bài Jakarta và thêm ảnh
+
+Mở `/the-gioi/?quan-tri=1` (hoặc **Viết bài / Quản trị** ở chân trang), đăng nhập tài khoản chủ website. Chọn **Sửa bài Jakarta & thêm ảnh** trong khung bản nháp. Lần đầu, nội dung bài cũ được đưa vào bản nháp để chỉnh sửa; nếu đã có bản nháp thì mở lại bản đó. Chọn ảnh JPG/PNG/WebP từ máy, tối đa 12 ảnh/bài, rồi **Lưu kỷ niệm** và **Đăng nhật ký công khai**. Lưu nháp chưa đưa ảnh lên web. Nút đăng vẫn đăng toàn bộ nhật ký sau xác nhận.
+
+Bài đã đăng trên Supabase tự được thêm vào kho nháp trên thiết bị mới nếu chưa có cùng mã; bản nháp đang sửa không bị ghi đè. Khi muốn lấy bản công khai mới hơn thay cho bản nháp cũ, dùng **Nhập nội dung đã đăng về bản nháp** sau khi sao lưu.
+
+Bản Jakarta đã đăng thay thẻ bài tĩnh trong danh sách công khai; URL cũ `/bai-viet/jakarta-24-27-08-2023.html` cũng tải nội dung và ảnh mới từ Supabase. Nếu chưa cấu hình dịch vụ hoặc không tải được, trang giữ bản chữ có sẵn. Cần cấu hình Supabase theo `supabase/README.md` trước khi đăng nhập và đăng bài. Repository chưa chứa ảnh gốc Jakarta; chủ website cần chọn lại ảnh từ thiết bị.

@@ -6,5 +6,5 @@ export default defineConfig(({mode})=>{
   let secret=key.startsWith('sb_secret_');
   if(key.split('.').length===3){try{secret=JSON.parse(Buffer.from(key.split('.')[1],'base64url').toString()).role!=='anon';}catch{secret=true;}}
   if(secret)throw new Error('VITE_SUPABASE_PUBLISHABLE_KEY must be a public publishable/anon key. Never use secret/service_role keys in browser code.');
-  return {build:{rollupOptions:{input:{home:resolve('index.html'),world:resolve('the-gioi/index.html'),vietnam:resolve('viet-nam/index.html')}}}};
+  return {build:{rollupOptions:{input:{jakarta:resolve('bai-viet/jakarta-24-27-08-2023.html'),home:resolve('index.html'),world:resolve('the-gioi/index.html'),vietnam:resolve('viet-nam/index.html')}}}};
 });
