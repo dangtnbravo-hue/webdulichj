@@ -1,5 +1,5 @@
 import {articleBlocks} from './article-blocks.js';
-export function createBlockEditor(container,{photos,onRemovePhoto}){
+export function createBlockEditor(container,{photos,onRemovePhoto,onChange=()=>{}}){
   let blocks=[];
   function render(){
     container.replaceChildren();
@@ -10,7 +10,7 @@ export function createBlockEditor(container,{photos,onRemovePhoto}){
       input.value=block.type==='text'?block.text:block.caption;
       input.maxLength=block.type==='text'?20000:500;
       if(block.type==='text')input.rows=5;
-      input.addEventListener('input',()=>{block[block.type==='text'?'text':'caption']=input.value});
+      input.addEventListener('input',()=>{block[block.type==='text'?'text':'caption']=input.value;onChange()});
       if(block.type==='photo'){
         const image=document.createElement('img');image.src=photos()[block.photo];image.alt=block.caption||'Ảnh trong bài';row.append(image);
       }
@@ -25,6 +25,7 @@ export function createBlockEditor(container,{photos,onRemovePhoto}){
       }
       container.append(row);
     });
+    onChange();
   }
   return {
     open(memory){blocks=structuredClone(articleBlocks(memory));if(!blocks.length)blocks.push({type:'text',text:''});render()},

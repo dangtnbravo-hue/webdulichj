@@ -94,3 +94,5 @@ Trong form viết/sửa bài, nội dung được chia thành các khối. Viế
 Bố cục xen kẽ được giữ trong bản nháp, bản sao lưu, bài công khai, album HTML xuất ra và trang Jakarta. Bài cũ chưa có bố cục vẫn đọc được; khi mở sửa, phần chữ và bộ ảnh cũ chuyển thành các khối để sắp xếp. Không cần chạy lại SQL.
 
 Menu phần Việt Nam có ba miền Bắc, Trung, Nam, mở danh sách bài tại `/viet-nam/?mien=bac#my-journal` (hoặc `trung`, `nam`). Khi viết/sửa bài có quốc gia Việt Nam, chọn **Miền của bài viết**, lưu rồi đăng công khai để bài vào đúng miền. Bài cũ chưa chọn miền vẫn hiện ở **Tất cả bài Việt Nam**, không tự đoán địa điểm từ nội dung. Menu Thế giới giữ các châu lục; cả hai thanh menu dùng cùng chiều cao và căn giữa các mục trên máy tính, xếp dọc trên điện thoại.
+
+Trong cửa sổ viết/sửa bài, **Xem trước bài đăng** nằm cạnh form trên máy tính, bên dưới form trên điện thoại. Tiêu đề, ngày, đoạn văn, ảnh, chú thích và thứ tự khối cập nhật ngay khi chỉnh sửa; phần xem trước dùng cùng cách dựng nội dung với bài đọc công khai. **Xem trước bài** đưa con trỏ tới khung này, không mở thêm cửa sổ và không tải nội dung lên Supabase. Vẫn cần lưu nháp và xác nhận đăng công khai như trước.
