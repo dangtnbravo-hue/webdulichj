@@ -38,13 +38,14 @@ let region=section||'international';
 let viewMode='globe';
 let internationalView='globe';
 let visited=new Set();
+let articleCountries=[];
 let ready=false;
 let canEdit=false;
 let vietnamMemories=0;
 let selectedCode, selectedPlace, selectedRegion;
 let internationalRegions=[], regionLayer;
 const markerIcon=L.divIcon({className:'visited-map-pin',html:'<svg viewBox="0 0 32 42" aria-hidden="true"><path d="M16 40S2 26 2 16a14 14 0 0 1 28 0c0 10-14 24-14 24Z" fill="#f2b63f" stroke="white" stroke-width="2"/><path d="m10 16 4 4 8-9" fill="none" stroke="#173e55" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',iconSize:[30,40],iconAnchor:[15,39],popupAnchor:[0,-32]});
-const foreignCodes=()=>confirmedForeignCountries([...visited]);
+const foreignCodes=()=>confirmedForeignCountries([...visited],articleCountries);
 function countryStyle(f) {
   // Visit highlights belong to recorded regions, never a whole country.
   return {color:'#a7c5d1',weight:.7,fillColor:'#e6f0f3',fillOpacity:1};
@@ -60,6 +61,7 @@ function popup(code) {
   if(visited.has(code)) {
     if(code!=='VN'&&internationalPlaces.some(p=>p.code===code)) {const list=document.createElement('div');list.className='country-city-buttons';internationalPlaces.filter(p=>p.code===code).forEach(place=>{const button=document.createElement('button');button.type='button';button.dataset.cityFocus=place.id;button.textContent=place.name;button.addEventListener('click',()=>showInternationalPlace(place.id));list.append(button);});box.append(list);}
     else if(visitedPlaces[code]?.length) {const places=document.createElement('p');places.className='visited-city-list';places.textContent=`Điểm đã ghé: ${visitedPlaces[code].join(' · ')}`;box.append(places);}
+    if(code!=='VN'&&articleCountries.includes(code)&&!internationalPlaces.some(p=>p.code===code)){const note=document.createElement('p');note.textContent='Có bài viết về nước này. Ghim là vị trí đại diện quốc gia, chưa phải địa điểm chuyến đi cụ thể.';box.append(note);}
     const link=document.createElement('a');link.href='#my-journal';link.textContent=code==='VN'?'Xem nhật ký Việt Nam ↗':'Xem nhật ký quốc tế ↗';link.addEventListener('click',()=>openJournal(code));box.append(link);
   } else if(canEdit) {
     const button=document.createElement('button');button.type='button';button.textContent='Đánh dấu đã đến +';button.disabled=!ready;
@@ -172,9 +174,9 @@ function refresh() {
   else if(domestic)status.textContent=`${vietnamPlaces.length} địa điểm đã ghé · ${vietnamMemories} kỷ niệm được lưu. Bấm cụm ghim để phóng to hoặc chọn tên địa điểm.`;
   else status.textContent=foreign.length?`${foreign.length} nước ngoài đã ghé. Chạm ghim để khui chuyện.`:'Chưa có dấu chân quốc tế. Chọn một nước đã đến để ghim kỷ niệm nhé.';
   countryLayer.setStyle(countryStyle);refreshRegionOverlays();markers.clearLayers();
-  internationalMapPoints(foreign,locations).forEach(place=>{const marker=L.marker([place.lat,place.lng],{icon:markerIcon,title:`${place.name} · ${names.of(place.code)}`,alt:place.name,keyboard:true}).addTo(markers);marker.on('click',()=>place.kind==='country'?showCountry(place.code,false):showInternationalPlace(place.id,false));});
+  internationalMapPoints(foreign,locations).forEach(place=>{const marker=L.marker([place.lat,place.lng],{icon:markerIcon,title:place.kind==='country'?`${place.name} · Có bài viết · Vị trí đại diện quốc gia`:`${place.name} · ${names.of(place.code)}`,alt:place.name,keyboard:true}).addTo(markers);marker.on('click',()=>place.kind==='country'?showCountry(place.code,false):showInternationalPlace(place.id,false));});
   document.querySelectorAll('[data-destination-country]').forEach(group=>{group.hidden=!visited.has(group.dataset.destinationCountry);});
-  globe?.update(foreign);
+  globe?.update(foreign,articleCountries);
   vietnamMap?.update(visited.has('VN'));
   if(selectedCode) {
     if(domestic)vietnamMap.show(popup('VN'));
@@ -197,7 +199,7 @@ async function switchView(mode) {
   if(mode==='flat'){map.invalidateSize({pan:false});resetMap();return;}
   try {
     if(!globePromise)globePromise=import('./globe-view.js').then(module=>module.createGlobe(document.querySelector('#globe-canvas'),{onCountry:code=>showCountry(code),onPlace:place=>showInternationalPlace(place.id),onRegion:feature=>showInternationalRegion(feature),onFailure:()=>{globe=null;globePromise=null;internationalView='flat';if(region==='international'){switchView('flat');document.querySelector('#map-status').textContent='Thiết bị vừa ngắt đồ họa 3D. Bản đồ 2D vẫn dùng được; bấm Địa cầu 3D để thử lại, hoặc mở trang bằng Safari/Chrome.';}}}));
-    globe=await globePromise;globe.update(foreignCodes());globe.activate(region==='international'&&viewMode==='globe');
+    globe=await globePromise;globe.update(foreignCodes(),articleCountries);globe.activate(region==='international'&&viewMode==='globe');
     if(selectedCode&&region==='international'&&viewMode==='globe'){if(selectedRegion)globe.focusRegion(selectedRegion);else if(selectedPlace)globe.focusPlace(selectedPlace);else globe.focus(selectedCode);}
     document.querySelector('#globe-feedback').textContent='Chỉ tô màu nơi Đôn đã ghé. Chạm mảng màu hoặc ghim vàng để xem từng điểm.';
   } catch {
@@ -254,7 +256,7 @@ export function mountWorldMap({initialRegion='international'}={}) {
   document.querySelector('#globe-zoom-in').addEventListener('click',()=>globe?.zoom(.8));document.querySelector('#globe-zoom-out').addEventListener('click',()=>globe?.zoom(1.25));
   document.querySelector('#globe-rotate').addEventListener('click',event=>{const rotating=globe?.rotate()||false;event.currentTarget.setAttribute('aria-pressed',String(rotating));event.currentTarget.textContent=rotating?'Dừng xoay':'Tự xoay';});
   document.querySelector('.globe-panel-close').addEventListener('click',()=>{document.querySelector('#globe-country-panel').hidden=true;selectedCode=null;selectedPlace=null;selectedRegion=null;});
-  window.addEventListener('journal:updated',event=>{visited=new Set(event.detail.countries);if(vietnamPlaces.length)visited.add('VN');ready=event.detail.ready;canEdit=Boolean(event.detail.canEdit);vietnamMemories=event.detail.vietnamMemories||0;refresh();});
+  window.addEventListener('journal:updated',event=>{articleCountries=event.detail.articleCountries||[];visited=new Set(event.detail.countries);if(vietnamPlaces.length)visited.add('VN');ready=event.detail.ready;canEdit=Boolean(event.detail.canEdit);vietnamMemories=event.detail.vietnamMemories||0;refresh();});
   window.addEventListener('journal:save-error',()=>{if(selectedCode)showCountry(selectedCode,false);document.querySelector('#map-status').textContent='Chưa lưu được dấu chân. Kiểm tra quyền hoặc dung lượng lưu trữ trong nhật ký.';});
   new ResizeObserver(()=>map.invalidateSize({pan:false})).observe(document.querySelector('#world-map'));
   mountInternationalRegions();

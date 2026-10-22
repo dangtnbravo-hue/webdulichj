@@ -1,3 +1,4 @@
+import {articleCountryCodes} from './international-places.js';
 import {requestedVietnamRegion,memoryInVietnamRegion} from './vietnam-regions.js';
 import {requestedContinent,countryInContinent} from './continents.js';
 import {jakartaDraft} from './jakarta-draft.js';
@@ -47,7 +48,7 @@ function renderPublic(){
       section.prepend(card);
     }
   }
-  window.dispatchEvent(new CustomEvent('journal:updated',{detail:{countries:published.countries,ready:true,canEdit:false,vietnamMemories:published.memories.filter(m=>m.country==='VN').length}}));
+  window.dispatchEvent(new CustomEvent('journal:updated',{detail:{countries:published.countries,articleCountries:articleCountryCodes(published.memories),ready:true,canEdit:false,vietnamMemories:published.memories.filter(m=>m.country==='VN').length}}));
 }
 function mountPublic(){
   const section=document.createElement('section');section.id='my-journal';section.className='section personal-journal';

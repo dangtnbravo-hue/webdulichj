@@ -22,11 +22,16 @@ export function internationalMapPoints(codes,locations) {
   });
 }
 
-// Globe pins represent only destinations supplied by the author, never country-centre placeholders.
-export function confirmedGlobePlaces(codes){
+// Existing city pins remain exact; published article countries may have explicitly labelled country pins.
+export function confirmedGlobePlaces(codes,articleCountries=[],locations={}){
   const visited=new Set(codes);
-  return internationalPlaces.filter(place=>visited.has(place.code)&&place.name.trim()&&Number.isFinite(place.lat)&&Number.isFinite(place.lng));
+  const known=internationalPlaces.filter(place=>visited.has(place.code)&&place.name.trim()&&Number.isFinite(place.lat)&&Number.isFinite(place.lng));
+  const knownCodes=new Set(known.map(place=>place.code));
+  const recorded=articleCountries.filter(code=>visited.has(code)&&!knownCodes.has(code));
+  return [...known,...internationalMapPoints(recorded,locations)];
 }
 
 // Use the same confirmed destination registry for the globe and its country counter.
-export function confirmedForeignCountries(codes){return [...new Set(confirmedGlobePlaces(codes).map(place=>place.code))];}
+export function confirmedForeignCountries(codes,articleCountries=[]){return [...new Set([...confirmedGlobePlaces(codes).map(place=>place.code),...articleCountries.filter(code=>code!=='VN'&&codes.includes(code))])];}
+
+export function articleCountryCodes(memories){return [...new Set(memories.map(memory=>memory.country).filter(code=>code!=='VN'))];}

@@ -34,3 +34,18 @@ test('foreign counters share the pin registry: seven confirmed countries, exclud
  assert.deepEqual(confirmedForeignCountries(['VN','US']),[]);
  assert.deepEqual(confirmedForeignCountries(['JP','JP','CN']),['JP','CN']);
 });
+
+test('article countries add country pins and counters without inventing cities or counting stale saved codes',async()=>{
+ const {articleCountryCodes,confirmedGlobePlaces,confirmedForeignCountries}=await import('../src/international-places.js');
+ const articles=articleCountryCodes([{country:'FR'},{country:'FR'},{country:'ID'},{country:'VN'}]);
+ assert.deepEqual(articles,['FR','ID']);
+ const codes=['ID','FR','US','VN'];
+ const locations={FR:{latlng:[46,2]},ID:{latlng:[-5,120]},US:{latlng:[38,-97]}};
+ const points=confirmedGlobePlaces(codes,articles,locations);
+ assert.equal(points.length,2);assert.equal(points[0].id,'jakarta');
+ assert.deepEqual(points[1],{id:'country-FR',code:'FR',name:'Pháp',lat:46,lng:2,kind:'country'});
+ assert.deepEqual(confirmedForeignCountries(codes,articles),['ID','FR']);
+ assert.deepEqual(confirmedGlobePlaces(codes,[],locations).map(p=>p.id),['jakarta']);
+ assert.deepEqual(confirmedForeignCountries(codes,[]),['ID']);
+ assert.deepEqual(confirmedGlobePlaces(['ID'],['FR'],locations).map(p=>p.id),['jakarta']);
+});

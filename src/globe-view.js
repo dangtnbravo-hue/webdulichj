@@ -27,7 +27,7 @@ export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailur
       const pin=document.createElement('button');pin.type='button';pin.className='globe-country-pin';
       if(d.places.length>1){pin.classList.add('globe-city-cluster');pin.textContent=String(d.places.length);pin.title=`${names.of(d.code)}: ${d.places.map(p=>p.name).join(', ')} — bấm để phóng to`;pin.addEventListener('click',e=>{e.stopPropagation();onCountry(d.code);focusPoints(d.places);});}
       else {
-        const place=d.places[0];pin.textContent='✓';pin.title=`${place.name} · ${names.of(place.code)} — đã đến`;pin.dataset.placeId=place.id;
+        const place=d.places[0];pin.textContent='✓';pin.title=place.kind==='country'?`${place.name} — có bài viết · vị trí đại diện quốc gia`:`${place.name} · ${names.of(place.code)} — đã đến`;pin.dataset.placeId=place.id;
         if(place.kind!=='country'){pin.classList.add('globe-city-pin');const label=document.createElement('span');label.className='globe-city-name';label.textContent=place.name;pin.append(label);}
         pin.setAttribute('aria-current',String(place.id===selectedId));
         pin.addEventListener('click',e=>{e.stopPropagation();place.kind==='country'?onCountry(place.code):onPlace(place);});
@@ -88,8 +88,8 @@ export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailur
   }
   return {
     destroy,
-    update(codes){
-      visited=new Set(codes);points=confirmedGlobePlaces(codes);
+    update(codes,articleCountries=[]){
+      visited=new Set(codes);points=confirmedGlobePlaces(codes,articleCountries,locations);
       if(selectedId&&!points.some(p=>p.id===selectedId))selectedId=null;
       rebuild();
       const visibleRegions=visitedRegions(regions,visited);
