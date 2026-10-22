@@ -1,3 +1,4 @@
+import {createPhotoGallery} from './photo-gallery.js';
 import {articleCountryCodes} from './international-places.js';
 import {requestedVietnamRegion,memoryInVietnamRegion} from './vietnam-regions.js';
 import {requestedContinent,countryInContinent} from './continents.js';
@@ -12,6 +13,11 @@ const defaultContent={version:1,countries:Object.keys(visitedPlaces),memories:[]
 let published=structuredClone(defaultContent);
 let revision=0;
 let owner=false;
+let photoGallery;
+function refreshGallery(){
+  photoGallery.update(published.memories.filter(m=>(pageSection==='vietnam'?m.country==='VN':m.country!=='VN')&&countryInContinent(m.country,selectedContinent)&&memoryInVietnamRegion(m,selectedVietnamRegion)));
+  document.querySelector('#my-journal')?.after(photoGallery.section);
+}
 const pageSection=document.body.dataset.section;
 let region=pageSection||'international';
 const selectedContinent=pageSection==='international'?requestedContinent(location.search):null;
@@ -27,6 +33,7 @@ async function readPublished(){
   return {content:validState(data.content),revision:data.revision};
 }
 function renderPublic(){
+  refreshGallery();
   const section=document.querySelector('#public-story-grid');if(!section)return;
   const memories=published.memories.filter(m=>(region==='vietnam'?m.country==='VN':m.country!=='VN')&&countryInContinent(m.country,selectedContinent)&&memoryInVietnamRegion(m,selectedVietnamRegion));
   const query=(document.querySelector('#public-search').value||'').toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d');
@@ -94,11 +101,12 @@ async function publishSnapshot(content){
   const {data,error}=await cloudClient.from('site_journal').update({content:next}).eq('id',1).eq('revision',revision).select('revision').maybeSingle();
   if(error)throw new Error('Chưa đăng được nội dung. Kiểm tra phiên đăng nhập và quyền chủ website; bản nháp vẫn còn.');
   if(!data)throw new Error('Bản công khai đã thay đổi ở thiết bị khác. Hãy sao lưu bản nháp, tải lại trang và kiểm tra trước khi đăng tiếp.');
-  revision=data.revision;published=next;
+  revision=data.revision;published=next;refreshGallery();
 }
 async function mountOwner(){
   readerEvents.abort();document.querySelector('#my-journal')?.remove();document.querySelector('#memory-view')?.remove();
   owner=true;if(selectedFilter)mountPublic();else await mountJournal({initialContent:published,onPublish:publishSnapshot,onRestore:async()=>{const result=await readPublished();published=result.content;revision=result.revision;return published;}});
+  refreshGallery();
   document.querySelector('#owner-login').hidden=true;document.querySelector('#owner-logout').hidden=false;document.querySelector('#owner-quick-actions').hidden=false;
   document.querySelector('#owner-quick-publish').hidden=Boolean(selectedFilter);
   if(selectedFilter){announce('Bạn đang xem các bài công khai theo khu vực. Bấm Viết bài & thêm ảnh hoặc Xem bản nháp để mở phần quản trị.');return;}
@@ -111,6 +119,7 @@ function downloadLegacy(){
   request.onsuccess=()=>{const db=request.result;const read=db.transaction('journal','readonly').objectStore('journal').get('state');read.onsuccess=()=>{db.close();if(!read.result){announce('Không tìm thấy bản nháp cũ trên trình duyệt này.');return;}const url=URL.createObjectURL(new Blob([JSON.stringify(read.result)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='don-du-don-ban-nhap-cu.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);announce('Đã tải bản sao lưu cũ trên trình duyệt này. Giữ tệp ở nơi riêng tư.');};read.onerror=()=>{db.close();announce('Không đọc được bản nháp cũ.');};};request.onerror=()=>announce('Không mở được kho bản nháp cũ.');
 }
 export async function mountPublishing(){
+  photoGallery=createPhotoGallery();document.querySelector('#about').before(photoGallery.section);
   document.querySelector('#stories').hidden=true;
   document.querySelectorAll('a[href="#stories"]').forEach(a=>a.href='#my-journal');
   document.querySelector('.search-toggle').addEventListener('click',event=>{event.stopImmediatePropagation();document.querySelector('#my-journal').scrollIntoView({behavior:'smooth'});document.querySelector('#public-search')?.focus({preventScroll:true});},{capture:true});
@@ -129,5 +138,5 @@ export async function mountPublishing(){
   document.querySelector('#owner-login').addEventListener('submit',async event=>{event.preventDefault();const form=event.currentTarget;const fields=new FormData(form);const button=form.querySelector('button');button.disabled=true;announce('Đang kiểm tra tài khoản chủ website…');try{const {error}=await cloudClient.auth.signInWithPassword({email:String(fields.get('email')),password:String(fields.get('password'))});if(error)throw new Error();if(!await isOwner()){await cloudClient.auth.signOut();announce('Tài khoản này không có quyền chủ website. Kiểm tra thiết lập site_owner trong Supabase.');return;}const result=await readPublished();published=result.content;revision=result.revision;await mountOwner();}catch{announce('Chưa đăng nhập được. Kiểm tra email, mật khẩu và cấu hình Supabase.');}finally{form.elements.password.value='';button.disabled=false;}});
   if(!cloudConfigured){mountPublic();announce('Chưa kết nối Supabase. Chủ website cần cấu hình URL, publishable key và chạy setup.sql trước khi đăng bài. Khách hiện chỉ xem danh sách quốc gia có sẵn.');return;}
   try{const result=await readPublished();published=result.content;revision=result.revision;if(await isOwner()){await mountOwner();return;}mountPublic();}
-  catch(error){mountPublic();document.querySelector('#public-load-status').textContent='Chưa tải được bài viết công khai. Vui lòng thử lại sau.';announce(error.message);}
+  catch(error){mountPublic();photoGallery.error();document.querySelector('#public-load-status').textContent='Chưa tải được bài viết công khai. Vui lòng thử lại sau.';announce(error.message);}
 }

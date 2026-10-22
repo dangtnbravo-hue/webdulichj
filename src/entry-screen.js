@@ -13,7 +13,7 @@ export function mountEntryScreen({start}){
     document.querySelectorAll('a[href="#explore"]').forEach(link=>link.href='#travel-map');
     start(scope).then(()=>{
       window.dispatchEvent(new CustomEvent('travel:region',{detail:{region:scope}}));
-      const target=['#my-journal','#about','#travel-map'].includes(location.hash)?document.querySelector(location.hash):null;
+      const target=['#my-journal','#about','#travel-map','#photo-gallery'].includes(location.hash)?document.querySelector(location.hash):null;
       if(target)target.scrollIntoView({block:'start'});
     });
     return;
@@ -24,8 +24,8 @@ export function mountEntryScreen({start}){
   app.before(entry);
   entry.querySelectorAll('[data-entry-region]').forEach(button=>button.addEventListener('click',()=>location.assign(path(button.dataset.entryRegion))));
   const hash=location.hash;
-  if(['#my-journal','#travel-map','#explore','#about','#the-gioi','#viet-nam'].includes(hash)){
+  if(['#my-journal','#travel-map','#explore','#about','#the-gioi','#viet-nam','#photo-gallery'].includes(hash)){
     const target=hash==='#viet-nam'?'vietnam':'international';
-    location.replace(path(target)+(['#the-gioi','#viet-nam'].includes(hash)?'':hash));
+    location.replace(path(target)+(['#the-gioi','#viet-nam','#photo-gallery'].includes(hash)?'':hash));
   }
 }
