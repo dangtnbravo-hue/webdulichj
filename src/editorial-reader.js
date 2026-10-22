@@ -1,3 +1,4 @@
+import {articleHTML} from './article-blocks.js';
 import {cloudClient, cloudConfigured} from './cloud-config.js';
 import {validState} from './journal.js';
 import {jakartaDraft} from './jakarta-draft.js';
@@ -17,13 +18,8 @@ async function loadArticle(){
     document.title=`${memory.title} · Đôn Đú Đởn`;
     document.querySelector('h1').textContent=memory.title;
     document.querySelector('.meta').textContent=`Indonesia${memory.date?' · '+memory.date:''}`;
-    const story=document.querySelector('.story');story.replaceChildren();
-    for(const text of [memory.story,memory.tips].filter(Boolean)){
-      const paragraph=document.createElement('p');paragraph.textContent=text;paragraph.style.whiteSpace='pre-wrap';story.append(paragraph);
-    }
-    for(const [index,url] of memory.photos.entries()){
-      const image=document.createElement('img');image.src=url;image.alt=`${memory.title} — ảnh ${index+1}`;image.loading='lazy';image.style.cssText='display:block;max-width:100%;height:auto;margin:20px auto;border-radius:8px';story.append(image);
-    }
+    const story=document.querySelector('.story');story.innerHTML=articleHTML(memory);
+    if(memory.tips){const paragraph=document.createElement('p');paragraph.textContent=memory.tips;paragraph.style.whiteSpace='pre-wrap';story.append(paragraph);}
     document.querySelector('.note').textContent='Bài viết do Đôn cập nhật trực tiếp trên website.';
   }catch{
     document.querySelector('.note').textContent='Chưa tải được bản cập nhật mới nhất. Đang hiển thị bản bài viết có sẵn; hãy thử tải lại khi có kết nối.';

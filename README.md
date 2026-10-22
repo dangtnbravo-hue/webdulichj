@@ -86,3 +86,9 @@ Mở `/the-gioi/?quan-tri=1` (hoặc **Viết bài / Quản trị** ở chân tr
 Bài đã đăng trên Supabase tự được thêm vào kho nháp trên thiết bị mới nếu chưa có cùng mã; bản nháp đang sửa không bị ghi đè. Khi muốn lấy bản công khai mới hơn thay cho bản nháp cũ, dùng **Nhập nội dung đã đăng về bản nháp** sau khi sao lưu.
 
 Bản Jakarta đã đăng thay thẻ bài tĩnh trong danh sách công khai; URL cũ `/bai-viet/jakarta-24-27-08-2023.html` cũng tải nội dung và ảnh mới từ Supabase. Nếu chưa cấu hình dịch vụ hoặc không tải được, trang giữ bản chữ có sẵn. Cần cấu hình Supabase theo `supabase/README.md` trước khi đăng nhập và đăng bài. Repository chưa chứa ảnh gốc Jakarta; chủ website cần chọn lại ảnh từ thiết bị.
+
+## Viết xen kẽ chữ và ảnh
+
+Trong form viết/sửa bài, nội dung được chia thành các khối. Viết đoạn đầu, bấm **+ Thêm đoạn văn** hoặc **+ Đoạn văn sau đây** để viết tiếp. Chọn ảnh ở **Ảnh kỷ niệm**; ảnh xuất hiện trong trình soạn, có ô chú thích riêng. Dùng **↑ Lên / ↓ Xuống** trên từng khối để xếp thành đoạn chữ → ảnh → đoạn chữ. Có thể xóa từng khối và bấm **Xem trước bài** trước khi lưu nháp. Giới hạn vẫn là 12 ảnh/bài và 20.000 ký tự nội dung. Ảnh chỉ được tải lên Supabase khi xác nhận đăng công khai.
+
+Bố cục xen kẽ được giữ trong bản nháp, bản sao lưu, bài công khai, album HTML xuất ra và trang Jakarta. Bài cũ chưa có bố cục vẫn đọc được; khi mở sửa, phần chữ và bộ ảnh cũ chuyển thành các khối để sắp xếp. Không cần chạy lại SQL.
