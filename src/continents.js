@@ -10,9 +10,16 @@ export const continents=[
 export function requestedContinent(search){return continents.find(c=>c.id===new URLSearchParams(search).get('chau'))||null;}
 export function countryInContinent(code,continent){return !continent||continent.countries.includes(code);}
 export function mountWorldNavigation(){
-  const details=document.querySelector('.world-navigation');if(!details)return;
-  const trigger=details.querySelector('summary');
-  document.addEventListener('click',event=>{if(!details.contains(event.target))details.open=false;});
-  details.addEventListener('keydown',event=>{if(event.key==='Escape'){details.open=false;trigger.focus();event.stopPropagation();}});
-  details.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{details.open=false;}));
+  const navigation=document.querySelector('.world-navigation');if(!navigation)return;
+  const trigger=navigation.querySelector('.navigation-trigger');
+  const panel=navigation.querySelector('.continent-navigation');
+  function setOpen(open){
+    trigger.setAttribute('aria-expanded',String(open));
+    navigation.dataset.open=String(open);panel.hidden=!open;
+  }
+  trigger.addEventListener('click',()=>setOpen(trigger.getAttribute('aria-expanded')!=='true'));
+  document.addEventListener('click',event=>{if(!navigation.contains(event.target))setOpen(false);});
+  navigation.addEventListener('keydown',event=>{if(event.key==='Escape'){setOpen(false);trigger.focus();event.stopPropagation();}});
+  navigation.addEventListener('focusout',event=>{if(!navigation.contains(event.relatedTarget))setOpen(false);});
+  panel.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>setOpen(false)));
 }

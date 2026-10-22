@@ -9,7 +9,7 @@ export function mountEntryScreen({start}){
     document.querySelector('#explore').hidden=true;
     document.querySelector('.categories').hidden=true;
     document.querySelectorAll('nav [data-nav-category]').forEach(link=>link.hidden=true);
-    const articlesLink=document.querySelector('nav a[href="#explore"]');articlesLink.href='#my-journal';articlesLink.textContent='Bài viết';
+    const articlesLink=document.querySelector('nav a[href="#explore"]');articlesLink.href='#my-journal';articlesLink.querySelector('span').textContent='Bài viết';
     document.querySelectorAll('a[href="#explore"]').forEach(link=>link.href='#travel-map');
     start(scope).then(()=>{
       window.dispatchEvent(new CustomEvent('travel:region',{detail:{region:scope}}));

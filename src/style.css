@@ -83,15 +83,14 @@
 @media(max-width:560px){.entry-choices{grid-template-columns:1fr}.entry-choice{min-height:240px;height:29svh}.entry-intro h1{font-size:36px}.entry-intro{margin:20px 0}.entry-card-copy>strong{font-size:34px}.entry-card-copy>strong br{display:none}.entry-card-copy>strong br:after{content:' '}.entry-card-copy>small{margin-bottom:8px}.entry-card-copy>b{margin-top:12px;padding-top:10px}.entry-card-copy{bottom:22px;right:20px}.entry-card-top{top:16px}.entry-brand>small{font-size:7px}.entry-footnote{font-size:9px;margin-top:20px}.destination-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.entry-choice>img{transition:none}.entry-choice:hover>img{transform:none}}
 .world-navigation{position:relative;align-self:center}
-.world-navigation>summary{display:flex;align-items:center;gap:7px;list-style:none;cursor:pointer;color:inherit;font:inherit;padding:12px 0;user-select:none}
-.world-navigation>summary::-webkit-details-marker{display:none}
-.world-navigation>summary:focus-visible{outline:2px solid #23896e;outline-offset:4px;border-radius:4px}
-.world-navigation[open]>summary{color:#16806b}.world-navigation[open]>summary svg{transform:rotate(180deg)}
+.world-navigation>.navigation-trigger{display:flex;align-items:center;gap:7px;list-style:none;cursor:pointer;color:inherit;font:inherit;padding:12px 0;user-select:none}
+.world-navigation>.navigation-trigger:focus-visible{outline:2px solid #23896e;outline-offset:4px;border-radius:4px}
+.world-navigation[data-open=true]>.navigation-trigger{color:#16806b}.world-navigation[data-open=true]>.navigation-trigger svg{transform:rotate(180deg)}
 .continent-navigation{position:absolute;top:100%;left:-18px;width:205px;padding:8px;background:white;border:1px solid #d4e6eb;border-radius:10px;box-shadow:0 12px 30px #143c5426;z-index:30}
 .continent-navigation>a{display:block;padding:11px 14px!important;border-radius:6px;font-size:12px;line-height:1.5;white-space:nowrap}
 .continent-navigation>a:hover,.continent-navigation>a:focus-visible{background:#e9f6f1;color:#187d65;outline:none}
 .continent-navigation>a:first-child{border-bottom:1px solid #dfebef;border-radius:0;margin-bottom:4px;font-weight:700}
-@media(max-width:760px){.world-navigation{align-self:stretch;width:100%}.world-navigation>summary{padding:13px 0;font-size:12px;justify-content:space-between}.continent-navigation{position:static;width:100%;box-shadow:none;border:0;border-left:2px solid #b9ded0;border-radius:0;margin-bottom:10px;background:#f5faf8}.continent-navigation>a{padding:10px 16px!important;font-size:12px}}
+@media(max-width:760px){.world-navigation{align-self:stretch;width:100%}.world-navigation>.navigation-trigger{padding:13px 0;font-size:12px;justify-content:space-between}.continent-navigation{position:static;width:100%;box-shadow:none;border:0;border-left:2px solid #b9ded0;border-radius:0;margin-bottom:10px;background:#f5faf8}.continent-navigation>a{padding:10px 16px!important;font-size:12px}}
 .continent-back{display:inline-block;margin-bottom:20px;color:#16806b;font-size:12px;font-weight:600}
 
 .article-edit-block{border:1px solid #b7d2dc;border-radius:10px;padding:16px;margin:16px 0;background:#f7fbfc}
@@ -103,6 +102,14 @@
 
 /* Match the dropdown trigger and ordinary links on the same navigation row. */
 .nav-wrap>nav{align-items:center}
-.nav-wrap>nav>a,.world-navigation>summary{display:inline-flex;align-items:center;min-height:44px;padding:12px 0;line-height:20px;white-space:nowrap}
+.nav-wrap>nav>a,.world-navigation>.navigation-trigger{display:inline-flex;align-items:center;min-height:44px;padding:12px 0;line-height:20px;white-space:nowrap}
 .world-navigation{align-self:auto}
-@media(max-width:760px){.nav-wrap>nav{align-items:stretch}.nav-wrap>nav>a,.world-navigation>summary{min-height:44px;padding:13px 0;line-height:20px}.world-navigation{align-self:stretch}}
+@media(max-width:760px){.nav-wrap>nav{align-items:stretch}.nav-wrap>nav>a,.world-navigation>.navigation-trigger{min-height:44px;padding:13px 0;line-height:20px}.world-navigation{align-self:stretch}}
+
+/* Use identical text boxes for links and the dropdown, including Safari. */
+.nav-wrap>nav .navigation-trigger{appearance:none;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;cursor:pointer;margin:0;text-align:left}
+.nav-wrap>nav>a,.nav-wrap>nav .navigation-trigger{height:44px;min-height:44px;padding:0;line-height:20px;align-items:center;box-sizing:border-box}
+.nav-wrap>nav>a>span,.navigation-trigger>span{display:block;line-height:20px}
+.navigation-trigger>svg{display:block;flex:none}
+@media(min-width:761px){.world-navigation{display:flex;align-items:center;height:44px}.nav-wrap>nav{height:44px}}
+@media(max-width:760px){.nav-wrap>nav .navigation-trigger{width:100%;justify-content:space-between;font-size:12px}}
