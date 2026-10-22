@@ -1,3 +1,4 @@
+import {requestedVietnamRegion,memoryInVietnamRegion} from './vietnam-regions.js';
 import {requestedContinent,countryInContinent} from './continents.js';
 import {jakartaDraft} from './jakarta-draft.js';
 import {siteArticles} from './site-articles.js';
@@ -13,6 +14,10 @@ let owner=false;
 const pageSection=document.body.dataset.section;
 let region=pageSection||'international';
 const selectedContinent=pageSection==='international'?requestedContinent(location.search):null;
+const selectedVietnamRegion=pageSection==='vietnam'?requestedVietnamRegion(location.search):null;
+const selectedFilter=selectedContinent||selectedVietnamRegion;
+const journalPath=pageSection==='vietnam'?'/viet-nam/':'/the-gioi/';
+const sectionName=pageSection==='vietnam'?'Việt Nam':'Thế giới';
 const readerEvents=new AbortController();
 function announce(message){document.querySelector('#publishing-status').textContent=message;}
 async function readPublished(){
@@ -22,17 +27,17 @@ async function readPublished(){
 }
 function renderPublic(){
   const section=document.querySelector('#public-story-grid');if(!section)return;
-  const memories=published.memories.filter(m=>(region==='vietnam'?m.country==='VN':m.country!=='VN')&&countryInContinent(m.country,selectedContinent));
+  const memories=published.memories.filter(m=>(region==='vietnam'?m.country==='VN':m.country!=='VN')&&countryInContinent(m.country,selectedContinent)&&memoryInVietnamRegion(m,selectedVietnamRegion));
   const query=(document.querySelector('#public-search').value||'').toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d');
   const filtered=memories.filter(m=>`${m.title} ${m.story} ${m.tips}`.toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').includes(query));
   const editorial=siteArticles.filter(a=>!published.memories.some(m=>m.id===jakartaDraft.id)&&(region==='vietnam'?a.country==='VN':a.country!=='VN')&&countryInContinent(a.country,selectedContinent)&&`${a.title} ${a.excerpt}`.toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').includes(query));
-  document.querySelector('#public-memory-status').textContent=`${selectedContinent?.name||(region==='vietnam'?'Việt Nam':'Thế giới')} · ${filtered.length+editorial.length} bài viết công khai`;
+  document.querySelector('#public-memory-status').textContent=`${selectedFilter?.name||(region==='vietnam'?'Việt Nam':'Thế giới')} · ${filtered.length+editorial.length} bài viết công khai`;
   section.innerHTML=filtered.length?filtered.map(m=>`<article class="memory-card">${m.photos[0]?`<button class="memory-cover" data-read-published="${m.id}" aria-label="Đọc ${escape(m.title)}"><img src="${m.photos[0]}" alt="${escape(m.title)}" loading="lazy"></button>`:'<div class="memory-no-photo">ĐI CÓ HỘI · KỂ CÓ ĐÔN</div>'}<div class="memory-card-body"><p class="memory-meta">${escape(names.of(m.country))}${m.date?` · ${escape(m.date)}`:''}</p><h3><button data-read-published="${m.id}">${escape(m.title)}</button></h3><p class="memory-excerpt">${escape(m.story||m.tips)}</p><button class="read-more" data-read-published="${m.id}">Nghe Đôn kể ↗</button></div></article>`).join(''):'<div class="journal-empty"><h3>Chuyện đang được Đôn gom góp.</h3><p>Chưa có bài công khai phù hợp trong mục này. Ghé lại hóng chuyện sau nhé.</p></div>';
-  if(!filtered.length&&!editorial.length&&selectedContinent){
+  if(!filtered.length&&!editorial.length&&selectedFilter){
     const empty=document.createElement('div');empty.className='journal-empty';
-    const title=document.createElement('h3');title.textContent=query?'Chưa tìm thấy bài phù hợp.':`${selectedContinent.name} đang đợi Đôn kể.`;
-    const note=document.createElement('p');note.textContent=query?'Thử từ khóa khác hoặc xóa ô tìm kiếm.':`Chưa có bài viết hoặc kinh nghiệm công khai của Đôn tại ${selectedContinent.name}.`;
-    const link=document.createElement('a');link.href='/the-gioi/#my-journal';link.textContent='Xem tất cả bài Thế giới ↗';empty.append(title,note,link);section.replaceChildren(empty);
+    const title=document.createElement('h3');title.textContent=query?'Chưa tìm thấy bài phù hợp.':`${selectedFilter.name} đang đợi Đôn kể.`;
+    const note=document.createElement('p');note.textContent=query?'Thử từ khóa khác hoặc xóa ô tìm kiếm.':`Chưa có bài viết hoặc kinh nghiệm công khai của Đôn tại ${selectedFilter.name}.`;
+    const link=document.createElement('a');link.href=journalPath+'#my-journal';link.textContent=`Xem tất cả bài ${sectionName} ↗`;empty.append(title,note,link);section.replaceChildren(empty);
   }
   if(editorial.length){
     if(!filtered.length)section.replaceChildren();
@@ -49,10 +54,10 @@ function mountPublic(){
   section.innerHTML=`<div class="container"><p class="eyebrow">CHUYỆN CỦA ĐÔN · MỜI BẠN HÓNG</p><h2>Đôn đi một chuyến.<br><em>Kể bạn nghe cả rổ.</em></h2><div class="public-reading-toolbar"><div class="filters" aria-label="Nhóm bài công khai"><button data-public-region="international" aria-pressed="true" class="active">Thế giới</button><button data-public-region="vietnam" aria-pressed="false">Việt Nam</button></div><label><span class="sr-only">Tìm bài đã đăng</span><input type="search" id="public-search" placeholder="Hóng chuyện gì nào?" maxlength="100"></label></div><p id="public-memory-status" role="status"></p><div id="public-story-grid"></div><p id="public-load-status" role="status"></p></div>`;
   document.querySelector('#about').before(section);
   if(document.body.dataset.section)section.querySelector('.public-reading-toolbar .filters').hidden=true;
-  if(selectedContinent){
-    section.querySelector('h2').textContent=`${selectedContinent.name} của Đôn`;
+  if(selectedFilter){
+    section.querySelector('h2').textContent=`${selectedFilter.name} của Đôn`;
     section.querySelector('.eyebrow').textContent='CHUYỆN ĐÃ ĐI · KINH NGHIỆM ĐỂ KỂ';
-    const back=document.createElement('a');back.href='/the-gioi/#my-journal';back.textContent='← Tất cả bài Thế giới';back.className='continent-back';section.querySelector('.container').prepend(back);
+    const back=document.createElement('a');back.href=journalPath+'#my-journal';back.textContent=`← Tất cả bài ${sectionName}`;back.className='continent-back';section.querySelector('.container').prepend(back);
   }
 
   document.body.insertAdjacentHTML('beforeend','<dialog id="memory-view" aria-label="Bài viết của Đôn"><button class="dialog-close" type="button" aria-label="Đóng bài viết">×</button><div class="memory-view-body"></div></dialog>');
@@ -92,10 +97,10 @@ async function publishSnapshot(content){
 }
 async function mountOwner(){
   readerEvents.abort();document.querySelector('#my-journal')?.remove();document.querySelector('#memory-view')?.remove();
-  owner=true;if(selectedContinent)mountPublic();else await mountJournal({initialContent:published,onPublish:publishSnapshot,onRestore:async()=>{const result=await readPublished();published=result.content;revision=result.revision;return published;}});
+  owner=true;if(selectedFilter)mountPublic();else await mountJournal({initialContent:published,onPublish:publishSnapshot,onRestore:async()=>{const result=await readPublished();published=result.content;revision=result.revision;return published;}});
   document.querySelector('#owner-login').hidden=true;document.querySelector('#owner-logout').hidden=false;document.querySelector('#owner-quick-actions').hidden=false;
-  document.querySelector('#owner-quick-publish').hidden=Boolean(selectedContinent);
-  if(selectedContinent){announce('Bạn đang xem các bài công khai theo châu. Bấm Viết bài & thêm ảnh hoặc Xem bản nháp để mở phần quản trị.');return;}
+  document.querySelector('#owner-quick-publish').hidden=Boolean(selectedFilter);
+  if(selectedFilter){announce('Bạn đang xem các bài công khai theo khu vực. Bấm Viết bài & thêm ảnh hoặc Xem bản nháp để mở phần quản trị.');return;}
   announce('Bạn đã đăng nhập. Bấm Viết bài & thêm ảnh để bắt đầu. Lưu kỷ niệm giữ bản nháp; Đăng nhật ký công khai sẽ đăng toàn bộ nhật ký sau khi bạn xác nhận.');
 }
 async function isOwner(){const {data:{user}}=await cloudClient.auth.getUser();if(!user)return false;const {data,error}=await cloudClient.rpc('is_site_owner');return !error&&data===true;}
@@ -116,9 +121,9 @@ export async function mountPublishing(){
     admin.scrollIntoView({block:'start'});
   }
   document.querySelector('#legacy-backup').addEventListener('click',downloadLegacy);
-  document.querySelector('#owner-quick-write').addEventListener('click',()=>{const target=document.querySelector('#add-memory');if(!owner)return;if(!target&&selectedContinent){location.assign('/the-gioi/#my-journal');return;}if(!target)return;if(target.disabled){announce('Bản nháp chưa sẵn sàng hoặc đang lưu. Kiểm tra thông báo trong mục Nhật ký của tôi.');return;}target.click();});
-  document.querySelector('#owner-quick-drafts').addEventListener('click',()=>{if(owner&&selectedContinent){location.assign('/the-gioi/#my-journal');return;}if(owner)document.querySelector('#my-journal').scrollIntoView({behavior:'smooth',block:'start'});});
-  document.querySelector('#owner-quick-publish').addEventListener('click',()=>{const target=document.querySelector('#publish-journal');if(!owner)return;if(!target&&selectedContinent){location.assign('/the-gioi/#my-journal');return;}if(!target)return;if(target.disabled){announce('Nhật ký đang bận lưu hoặc đăng. Bạn chờ hoàn tất nhé.');return;}document.querySelector('#my-journal').scrollIntoView({behavior:'smooth',block:'start'});target.click();});
+  document.querySelector('#owner-quick-write').addEventListener('click',()=>{const target=document.querySelector('#add-memory');if(!owner)return;if(!target&&selectedFilter){location.assign(journalPath+'#my-journal');return;}if(!target)return;if(target.disabled){announce('Bản nháp chưa sẵn sàng hoặc đang lưu. Kiểm tra thông báo trong mục Nhật ký của tôi.');return;}target.click();});
+  document.querySelector('#owner-quick-drafts').addEventListener('click',()=>{if(owner&&selectedFilter){location.assign(journalPath+'#my-journal');return;}if(owner)document.querySelector('#my-journal').scrollIntoView({behavior:'smooth',block:'start'});});
+  document.querySelector('#owner-quick-publish').addEventListener('click',()=>{const target=document.querySelector('#publish-journal');if(!owner)return;if(!target&&selectedFilter){location.assign(journalPath+'#my-journal');return;}if(!target)return;if(target.disabled){announce('Nhật ký đang bận lưu hoặc đăng. Bạn chờ hoàn tất nhé.');return;}document.querySelector('#my-journal').scrollIntoView({behavior:'smooth',block:'start'});target.click();});
   document.querySelector('#owner-logout').addEventListener('click',async()=>{const {error}=await cloudClient.auth.signOut();if(error){announce('Chưa đăng xuất được. Thử lại khi có kết nối mạng.');return;}window.location.reload();});
   document.querySelector('#owner-login').addEventListener('submit',async event=>{event.preventDefault();const form=event.currentTarget;const fields=new FormData(form);const button=form.querySelector('button');button.disabled=true;announce('Đang kiểm tra tài khoản chủ website…');try{const {error}=await cloudClient.auth.signInWithPassword({email:String(fields.get('email')),password:String(fields.get('password'))});if(error)throw new Error();if(!await isOwner()){await cloudClient.auth.signOut();announce('Tài khoản này không có quyền chủ website. Kiểm tra thiết lập site_owner trong Supabase.');return;}const result=await readPublished();published=result.content;revision=result.revision;await mountOwner();}catch{announce('Chưa đăng nhập được. Kiểm tra email, mật khẩu và cấu hình Supabase.');}finally{form.elements.password.value='';button.disabled=false;}});
   if(!cloudConfigured){mountPublic();announce('Chưa kết nối Supabase. Chủ website cần cấu hình URL, publishable key và chạy setup.sql trước khi đăng bài. Khách hiện chỉ xem danh sách quốc gia có sẵn.');return;}

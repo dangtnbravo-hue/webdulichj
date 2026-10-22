@@ -100,3 +100,9 @@
 .article-edit-block textarea,.article-edit-block input{width:100%;box-sizing:border-box}
 .article-photo{margin:24px 0}.article-photo img{display:block;margin:auto;border-radius:8px}
 .article-photo figcaption{text-align:center;font-size:14px;color:#567583;white-space:pre-wrap}
+
+/* Match the dropdown trigger and ordinary links on the same navigation row. */
+.nav-wrap>nav{align-items:center}
+.nav-wrap>nav>a,.world-navigation>summary{display:inline-flex;align-items:center;min-height:44px;padding:12px 0;line-height:20px;white-space:nowrap}
+.world-navigation{align-self:auto}
+@media(max-width:760px){.nav-wrap>nav{align-items:stretch}.nav-wrap>nav>a,.world-navigation>summary{min-height:44px;padding:13px 0;line-height:20px}.world-navigation{align-self:stretch}}
