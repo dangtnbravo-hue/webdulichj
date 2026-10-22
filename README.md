@@ -81,7 +81,7 @@ Thanh menu không còn liên kết Việt Nam. Chạm/bấm **Thế giới** m�
 
 ## Tự sửa bài Jakarta và thêm ảnh
 
-Mở `/the-gioi/?quan-tri=1` (hoặc **Viết bài / Quản trị** ở chân trang), đăng nhập tài khoản chủ website. Chọn **Sửa bài Jakarta & thêm ảnh** trong khung bản nháp. Lần đầu, nội dung bài cũ được đưa vào bản nháp để chỉnh sửa; nếu đã có bản nháp thì mở lại bản đó. Chọn ảnh JPG/PNG/WebP từ máy, tối đa 12 ảnh/bài, rồi **Lưu kỷ niệm** và **Đăng nhật ký công khai**. Lưu nháp chưa đưa ảnh lên web. Nút đăng vẫn đăng toàn bộ nhật ký sau xác nhận.
+Mở `/the-gioi/?quan-tri=1` (hoặc **Viết bài / Quản trị** ở chân trang), đăng nhập tài khoản chủ website. Với bài Jakarta đã có trong bản nháp hoặc đã đăng trên Supabase, chọn **Chỉnh sửa** ngay trên thẻ bài trong danh sách bản nháp. Chọn ảnh JPG/PNG/WebP từ máy, tối đa 12 ảnh/bài, rồi **Lưu kỷ niệm** và **Đăng nhật ký công khai**. Lưu nháp chưa đưa ảnh lên web. Nút đăng vẫn đăng toàn bộ nhật ký sau xác nhận.
 
 Bài đã đăng trên Supabase tự được thêm vào kho nháp trên thiết bị mới nếu chưa có cùng mã; bản nháp đang sửa không bị ghi đè. Khi muốn lấy bản công khai mới hơn thay cho bản nháp cũ, dùng **Nhập nội dung đã đăng về bản nháp** sau khi sao lưu.
 

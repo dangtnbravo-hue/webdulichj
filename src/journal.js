@@ -1,7 +1,6 @@
 import {vietnamRegions} from './vietnam-regions.js';
 import {articleHTML,validateBlocks} from './article-blocks.js';
 import {createBlockEditor} from './block-editor.js';
-import {jakartaDraft} from './jakarta-draft.js';
 import {confirmedForeignCountries,articleCountryCodes} from './international-places.js';
 import { trustedPhoto } from './cloud-config.js';
 import { visitedPlaces, visitedPlacesVersion } from './visited-places.js';
@@ -234,17 +233,7 @@ export async function mountJournal({ onPublish, onRestore, initialContent } = {}
     finally{setBusy(false);}
   });
   if(onPublish) {
-    const bar=document.createElement('div');bar.className='owner-publish-bar';bar.innerHTML='<strong>Bản nháp trên thiết bị của Đôn</strong><p>Lưu kỷ niệm chỉ lưu nháp. Nút Đăng công khai sẽ đưa TOÀN BỘ nhật ký của cả Việt Nam và Thế giới, gồm ảnh và danh sách quốc gia, lên website cho mọi người xem.</p><div><button id="publish-journal" type="button" class="button blue">Đăng nhật ký công khai</button><button id="edit-jakarta" type="button">Sửa bài Jakarta & thêm ảnh</button><button id="restore-published" type="button">Nhập nội dung đã đăng về bản nháp</button></div>';section.querySelector('.container').prepend(bar);
-    document.querySelector('#edit-jakarta').hidden=pageSection==='vietnam';
-    document.querySelector('#edit-jakarta').addEventListener('click',async()=>{
-      if(busy)return;
-      let memory=state.memories.find(m=>m.id===jakartaDraft.id);
-      if(!memory){
-        await mutate(()=>persist(validState({...state,countries:[...new Set([...state.countries,'ID'])],memories:[structuredClone(jakartaDraft),...state.memories]})),'Đã nhập bài Jakarta vào bản nháp. Thêm ảnh rồi lưu và đăng công khai.');
-        memory=state.memories.find(m=>m.id===jakartaDraft.id);
-      }
-      if(memory)openEditor(memory);
-    });
+    const bar=document.createElement('div');bar.className='owner-publish-bar';bar.innerHTML='<strong>Bản nháp trên thiết bị của Đôn</strong><p>Lưu kỷ niệm chỉ lưu nháp. Nút Đăng công khai sẽ đưa TOÀN BỘ nhật ký của cả Việt Nam và Thế giới, gồm ảnh và danh sách quốc gia, lên website cho mọi người xem.</p><div><button id="publish-journal" type="button" class="button blue">Đăng nhật ký công khai</button><button id="restore-published" type="button">Nhập nội dung đã đăng về bản nháp</button></div>';section.querySelector('.container').prepend(bar);
     document.querySelector('#publish-journal').addEventListener('click',async()=>{if(busy)return;if(!window.confirm('Đăng TOÀN BỘ nhật ký này công khai, gồm ảnh, câu chuyện, kinh nghiệm và quốc gia? Mọi người sẽ xem được nội dung sau khi đăng.'))return;setBusy(true);announce('Đang tải ảnh và đăng nhật ký…');try{await onPublish(validState(structuredClone(state)));announce('Đã đăng công khai. Khách mở website sẽ thấy bản vừa đăng.');}catch(error){announce(error.message||'Chưa đăng được. Bản nháp trên thiết bị vẫn còn.');}finally{setBusy(false);}});
     document.querySelector('#restore-published').addEventListener('click',async()=>{if(busy||!window.confirm('Nhập nội dung công khai và gộp vào bản nháp? Bài có cùng mã sẽ được thay bằng nội dung đã đăng. Hãy sao lưu nếu muốn giữ bản nháp cũ.'))return;await mutate(async()=>{const incoming=validState(await onRestore());const memories=new Map(state.memories.map(m=>[m.id,m]));incoming.memories.forEach(m=>memories.set(m.id,m));await persist(validState({version:1,countries:[...new Set([...state.countries,...incoming.countries])],memories:[...memories.values()]}));},'Đã nhập nội dung công khai về bản nháp.');});
   }
