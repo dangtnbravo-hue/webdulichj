@@ -106,3 +106,9 @@ Chọn quốc gia trong form và lưu bài: bản đồ nháp cùng bộ đếm 
 ## Ảnh hành trình
 
 Menu **Ảnh hành trình** mở thư viện tại `/the-gioi/#photo-gallery` hoặc `/viet-nam/#photo-gallery`. Thư viện lấy ảnh từ bài đã đăng công khai, giữ thứ tự/chú thích ảnh trong bài và tách riêng Thế giới/Việt Nam; khi đang chọn châu hoặc miền thì chỉ hiện ảnh trong phạm vi đó. Có bộ lọc quốc gia, tải thêm từng nhóm 24 ảnh và cửa sổ xem lớn với nút trước/sau (phím ←/→, Esc để đóng). Không dùng ảnh nháp trên thiết bị hoặc ảnh giao diện làm ảnh chuyến đi. Chủ website thêm ảnh trong bài rồi lưu và **Đăng nhật ký công khai** để ảnh xuất hiện ở đây; không cần upload lại riêng cho thư viện. Khi chưa có ảnh đã đăng, mục này hiển thị trạng thái trống.
+
+### Thêm ảnh trực tiếp vào thư viện
+
+Đăng nhập tài khoản chủ website rồi mở **Ảnh hành trình → + Thêm ảnh**. Nhập tên bộ ảnh, chọn quốc gia (và miền khi ở Việt Nam), ngày chụp nếu nhớ; chọn tối đa 12 ảnh JPG/PNG/WebP, mỗi ảnh tối đa 15 MB. Kiểm tra ảnh xem trước, nhập chú thích hoặc bỏ ảnh không muốn đăng. Bấm **Đăng ảnh công khai** và xác nhận: chỉ bộ ảnh này được tải lên, không đăng kèm bài viết còn ở bản nháp. Khi lỗi mạng, form giữ ảnh đã chọn để thử lại.
+
+Bộ ảnh độc lập dùng chung kho lưu trữ và quyền chủ website của Supabase, không cần chạy lại SQL; ảnh xuất hiện trong thư viện, không tạo thẻ bài mới ở danh sách bài viết công khai. Bộ ảnh đã đăng được đưa vào danh sách quản trị để chỉnh sửa sau; các bài và bộ ảnh công khai khác được giữ nguyên. Khách không đăng nhập không thấy nút thêm ảnh.

@@ -6,7 +6,7 @@ import { trustedPhoto } from './cloud-config.js';
 import { visitedPlaces, visitedPlacesVersion } from './visited-places.js';
 const codes = 'AF AL DZ AD AO AG AR AM AU AT AZ BS BH BD BB BY BE BZ BJ BT BO BA BW BR BN BG BF BI CV KH CM CA CF TD CL CN CO KM CG CD CR CI HR CU CY CZ DK DJ DM DO EC EG SV GQ ER EE SZ ET FJ FI FR GA GM GE DE GH GR GD GT GN GW GY HT HN HU IS IN ID IR IQ IE IL IT JM JP JO KZ KE KI KP KR KW KG LA LV LB LS LR LY LI LT LU MG MW MY MV ML MT MH MR MU MX FM MD MC MN ME MA MZ MM NA NR NP NL NZ NI NE NG MK NO OM PK PW PS PA PG PY PE PH PL PT QA RO RU RW KN LC VC WS SM ST SA SN RS SC SL SG SK SI SB SO ZA SS ES LK SD SR SE CH SY TJ TZ TH TL TG TO TT TN TR TM TV UG UA AE GB US UY UZ VU VA VE VN YE ZM ZW'.split(' ');
 const names = new Intl.DisplayNames(['vi'], { type: 'region' });
-const countries = codes.map(code => ({ code, name: names.of(code) })).sort((a,b) => a.name.localeCompare(b.name,'vi'));
+export const countries = codes.map(code => ({ code, name: names.of(code) })).sort((a,b) => a.name.localeCompare(b.name,'vi'));
 const countryName = code => names.of(code);
 const escapeHTML = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const photoPattern = /^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/;
@@ -89,13 +89,14 @@ export function validState(raw) {
   const memories = raw.memories.map(m => {
     if(!m || !/^[a-f0-9-]{36}$/.test(m.id) || ids.has(m.id) || !codes.includes(m.country) || typeof m.title !== 'string' || !m.title.trim() || m.title.length > 120 || typeof m.story !== 'string' || m.story.length > 20000 || typeof m.tips !== 'string' || m.tips.length > 10000 || typeof m.date !== 'string' || (m.date && (!/^\d{4}-\d{2}-\d{2}$/.test(m.date) || !Number.isFinite(Date.parse(m.date)) || new Date(m.date).toISOString().slice(0,10)!==m.date)) || !Array.isArray(m.photos) || m.photos.length > 12 || m.photos.some(p => typeof p !== 'string' || p.length > 3000000 || !(photoPattern.test(p)||trustedPhoto(p)))) throw new Error('Invalid memory');
     if(m.vietnamRegion!==undefined&&m.vietnamRegion!==''&&(!vietnamRegions.some(r=>r.id===m.vietnamRegion)||m.country!=='VN'))throw new Error('Invalid Vietnam region');
+    if(m.galleryOnly!==undefined&&typeof m.galleryOnly!=='boolean')throw new Error('Invalid gallery album');
     ids.add(m.id);
     const blocks=m.blocks===undefined?{}:{blocks:validateBlocks(m.blocks,m.photos)};
-    return { ...blocks, ...(m.vietnamRegion?{vietnamRegion:m.vietnamRegion}:{}), id: m.id, title: m.title.trim(), country: m.country, date: m.date, story: m.story, tips: m.tips, photos: [...m.photos] };
+    return { ...blocks, ...(m.galleryOnly?{galleryOnly:true}:{}), ...(m.vietnamRegion?{vietnamRegion:m.vietnamRegion}:{}), id: m.id, title: m.title.trim(), country: m.country, date: m.date, story: m.story, tips: m.tips, photos: [...m.photos] };
   });
   return { version: 1, countries: [...new Set([...raw.countries,...memories.map(m=>m.country)])], memories };
 }
-async function resizePhoto(file) {
+export async function resizePhoto(file) {
   if(!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 15*1024*1024) throw new Error('Chọn ảnh JPG, PNG hoặc WebP, mỗi ảnh tối đa 15 MB.');
   const bitmap = await createImageBitmap(file);
   try {
@@ -187,6 +188,10 @@ export async function mountJournal({ onPublish, onRestore, initialContent } = {}
     if (state.countries.includes(code)) { render(); return; }
     mutate(() => persist({...state, countries: [...state.countries, code]}), `Đã đánh dấu ${countryName(code)} trên bản đồ.`);
   });
+  window.addEventListener('journal:published-album',event=>{
+    const {memory,onSaved}=event.detail||{};if(!memory||busy)return;
+    mutate(async()=>{await persist(validState({...state,countries:[...new Set([...state.countries,memory.country])],memories:[memory,...state.memories.filter(m=>m.id!==memory.id)]}));onSaved?.();},'Đã thêm bộ ảnh đã đăng vào danh sách để bạn có thể chỉnh sửa sau.');
+  });
   document.querySelector('#add-memory').addEventListener('click',()=>openEditor());
   document.querySelector('#country-form').addEventListener('submit',event=>{event.preventDefault();const code=document.querySelector('#visited-country').value;if(state.countries.includes(code)){announce(`${countryName(code)} đã có trong danh sách. Mỗi quốc gia chỉ tính một lần.`);return;}mutate(()=>persist({...state,countries:[...state.countries,code]}),`Đã thêm ${countryName(code)} vào hành trình.`);});
   section.addEventListener('click',event=>{
@@ -228,7 +233,7 @@ export async function mountJournal({ onPublish, onRestore, initialContent } = {}
     if(blockEditor.getBlocks().filter(b=>b.type==='text').map(b=>b.text).join('\n\n').length>20000){status.textContent='Nội dung bài tối đa 20.000 ký tự.';return;}
     if(files.length+retainedPhotos.length>12){status.textContent='Mỗi kỷ niệm tối đa 12 ảnh. Bỏ bớt ảnh trước khi lưu.';return;}
     setBusy(true);status.textContent='Đang xử lý ảnh và lưu kỷ niệm…';
-    try{const photos=[...retainedPhotos];const memory={id:editingId||crypto.randomUUID(),title:String(fields.get('title')).trim(),country:String(fields.get('country')),vietnamRegion:fields.get('country')==='VN'?String(fields.get('vietnamRegion')):'',date:String(fields.get('date')),blocks:blockEditor.getBlocks(),story:blockEditor.getBlocks().filter(b=>b.type==='text').map(b=>b.text).join('\n\n'),tips:String(fields.get('tips')),photos};const next=validState({...state,countries:[...new Set([...state.countries,memory.country])],memories:editingId?state.memories.map(m=>m.id===editingId?memory:m):[memory,...state.memories]});const previousGroup=journalGroup;journalGroup=memory.country==='VN'?'vietnam':'abroad';try{await persist(next);}catch(error){journalGroup=previousGroup;throw error;}document.querySelector('#memory-dialog').close();announce('Đã lưu kỷ niệm và cập nhật bộ đếm. Nhớ tải bản sao lưu để giữ an toàn.');}
+    try{const photos=[...retainedPhotos];const memory={...(state.memories.find(m=>m.id===editingId)?.galleryOnly?{galleryOnly:true}:{}),id:editingId||crypto.randomUUID(),title:String(fields.get('title')).trim(),country:String(fields.get('country')),vietnamRegion:fields.get('country')==='VN'?String(fields.get('vietnamRegion')):'',date:String(fields.get('date')),blocks:blockEditor.getBlocks(),story:blockEditor.getBlocks().filter(b=>b.type==='text').map(b=>b.text).join('\n\n'),tips:String(fields.get('tips')),photos};const next=validState({...state,countries:[...new Set([...state.countries,memory.country])],memories:editingId?state.memories.map(m=>m.id===editingId?memory:m):[memory,...state.memories]});const previousGroup=journalGroup;journalGroup=memory.country==='VN'?'vietnam':'abroad';try{await persist(next);}catch(error){journalGroup=previousGroup;throw error;}document.querySelector('#memory-dialog').close();announce('Đã lưu kỷ niệm và cập nhật bộ đếm. Nhớ tải bản sao lưu để giữ an toàn.');}
     catch(error){status.textContent=error.message.startsWith('Chọn ảnh')?error.message:'Chưa lưu được. Kiểm tra định dạng ảnh và dung lượng trình duyệt; dữ liệu cũ vẫn được giữ.';}
     finally{setBusy(false);}
   });

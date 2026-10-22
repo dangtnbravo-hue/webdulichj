@@ -1,3 +1,4 @@
+import {createGalleryUpload} from './gallery-upload.js';
 import {createPhotoGallery} from './photo-gallery.js';
 import {articleCountryCodes} from './international-places.js';
 import {requestedVietnamRegion,memoryInVietnamRegion} from './vietnam-regions.js';
@@ -14,6 +15,9 @@ let published=structuredClone(defaultContent);
 let revision=0;
 let owner=false;
 let photoGallery;
+let galleryUpload;
+let publishing=false;
+const locallyKnownAlbums=new Set();
 function refreshGallery(){
   photoGallery.update(published.memories.filter(m=>(pageSection==='vietnam'?m.country==='VN':m.country!=='VN')&&countryInContinent(m.country,selectedContinent)&&memoryInVietnamRegion(m,selectedVietnamRegion)));
   document.querySelector('#my-journal')?.after(photoGallery.section);
@@ -35,7 +39,7 @@ async function readPublished(){
 function renderPublic(){
   refreshGallery();
   const section=document.querySelector('#public-story-grid');if(!section)return;
-  const memories=published.memories.filter(m=>(region==='vietnam'?m.country==='VN':m.country!=='VN')&&countryInContinent(m.country,selectedContinent)&&memoryInVietnamRegion(m,selectedVietnamRegion));
+  const memories=published.memories.filter(m=>!m.galleryOnly&&(region==='vietnam'?m.country==='VN':m.country!=='VN')&&countryInContinent(m.country,selectedContinent)&&memoryInVietnamRegion(m,selectedVietnamRegion));
   const query=(document.querySelector('#public-search').value||'').toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d');
   const filtered=memories.filter(m=>`${m.title} ${m.story} ${m.tips}`.toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').includes(query));
   const editorial=siteArticles.filter(a=>!published.memories.some(m=>m.id===jakartaDraft.id)&&(region==='vietnam'?a.country==='VN':a.country!=='VN')&&countryInContinent(a.country,selectedContinent)&&`${a.title} ${a.excerpt}`.toLocaleLowerCase('vi').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').includes(query));
@@ -78,9 +82,15 @@ function mountPublic(){
   window.addEventListener('map:show-journal',event=>setRegion(event.detail.code==='VN'?'vietnam':'international'),{signal:readerEvents.signal});
   renderPublic();
 }
-async function publishSnapshot(content){
+async function publishSnapshot(content,expectedRevision=revision,keepAlbums=true){
   if(!owner)throw new Error('Chỉ tài khoản chủ website được đăng nội dung.');
-  const next=validState(content);
+  if(publishing)throw new Error('Đang có một lần đăng khác. Bạn chờ hoàn tất rồi thử lại nhé.');
+  publishing=true;
+  try{
+  let next=validState(content);
+  // Standalone public albums are retained when an older local journal is published.
+  const ids=new Set(next.memories.map(m=>m.id));
+  if(keepAlbums)next=validState({...next,memories:[...next.memories,...published.memories.filter(m=>m.galleryOnly&&!ids.has(m.id)&&!locallyKnownAlbums.has(m.id))]});
   const converted=new Map();
   for(const memory of next.memories){
     const paths=[];
@@ -98,14 +108,16 @@ async function publishSnapshot(content){
     memory.photos=paths;
   }
   if(new Blob([JSON.stringify(next)]).size>5*1024*1024)throw new Error('Nội dung chữ vượt giới hạn 5 MB cho một lần đăng. Hãy giảm bớt nội dung.');
-  const {data,error}=await cloudClient.from('site_journal').update({content:next}).eq('id',1).eq('revision',revision).select('revision').maybeSingle();
+  const {data,error}=await cloudClient.from('site_journal').update({content:next}).eq('id',1).eq('revision',expectedRevision).select('revision').maybeSingle();
   if(error)throw new Error('Chưa đăng được nội dung. Kiểm tra phiên đăng nhập và quyền chủ website; bản nháp vẫn còn.');
   if(!data)throw new Error('Bản công khai đã thay đổi ở thiết bị khác. Hãy sao lưu bản nháp, tải lại trang và kiểm tra trước khi đăng tiếp.');
   revision=data.revision;published=next;refreshGallery();
+  }finally{publishing=false}
 }
 async function mountOwner(){
   readerEvents.abort();document.querySelector('#my-journal')?.remove();document.querySelector('#memory-view')?.remove();
-  owner=true;if(selectedFilter)mountPublic();else await mountJournal({initialContent:published,onPublish:publishSnapshot,onRestore:async()=>{const result=await readPublished();published=result.content;revision=result.revision;return published;}});
+  published.memories.filter(m=>m.galleryOnly).forEach(m=>locallyKnownAlbums.add(m.id));
+  owner=true;galleryUpload.setOwner(true);if(selectedFilter)mountPublic();else await mountJournal({initialContent:published,onPublish:publishSnapshot,onRestore:async()=>{const result=await readPublished();published=result.content;revision=result.revision;return published;}});
   refreshGallery();
   document.querySelector('#owner-login').hidden=true;document.querySelector('#owner-logout').hidden=false;document.querySelector('#owner-quick-actions').hidden=false;
   document.querySelector('#owner-quick-publish').hidden=Boolean(selectedFilter);
@@ -120,6 +132,17 @@ function downloadLegacy(){
 }
 export async function mountPublishing(){
   photoGallery=createPhotoGallery();document.querySelector('#about').before(photoGallery.section);
+  galleryUpload=createGalleryUpload({section:pageSection,onPublish:async memory=>{
+    if(!owner)throw new Error('Bạn cần đăng nhập bằng tài khoản chủ website.');
+    const latest=await readPublished();
+    const content=validState({...latest.content,countries:[...new Set([...latest.content.countries,memory.country])],memories:[memory,...latest.content.memories]});
+    await publishSnapshot(content,latest.revision,false);
+    if(selectedFilter){renderPublic()}else{
+      window.dispatchEvent(new CustomEvent('journal:published-album',{detail:{memory:published.memories.find(m=>m.id===memory.id),onSaved:()=>locallyKnownAlbums.add(memory.id)}}));
+    }
+    announce('Đã đăng bộ ảnh công khai vào Ảnh hành trình. Các bản nháp bài viết khác chưa được đăng.');
+  }});
+  photoGallery.section.querySelector('.gallery-heading').append(galleryUpload.button);
   document.querySelector('#stories').hidden=true;
   document.querySelectorAll('a[href="#stories"]').forEach(a=>a.href='#my-journal');
   document.querySelector('.search-toggle').addEventListener('click',event=>{event.stopImmediatePropagation();document.querySelector('#my-journal').scrollIntoView({behavior:'smooth'});document.querySelector('#public-search')?.focus({preventScroll:true});},{capture:true});
