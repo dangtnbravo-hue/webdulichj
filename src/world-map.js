@@ -201,7 +201,7 @@ async function switchView(mode) {
     if(!globePromise)globePromise=import('./globe-view.js').then(module=>module.createGlobe(document.querySelector('#globe-canvas'),{onCountry:code=>showCountry(code),onPlace:place=>showInternationalPlace(place.id),onRegion:feature=>showInternationalRegion(feature),onFailure:()=>{globe=null;globePromise=null;internationalView='flat';if(region==='international'){switchView('flat');document.querySelector('#map-status').textContent='Thiết bị vừa ngắt đồ họa 3D. Bản đồ 2D vẫn dùng được; bấm Địa cầu 3D để thử lại, hoặc mở trang bằng Safari/Chrome.';}}}));
     globe=await globePromise;globe.update(foreignCodes(),articleCountries);globe.activate(region==='international'&&viewMode==='globe');
     if(selectedCode&&region==='international'&&viewMode==='globe'){if(selectedRegion)globe.focusRegion(selectedRegion);else if(selectedPlace)globe.focusPlace(selectedPlace);else globe.focus(selectedCode);}
-    document.querySelector('#globe-feedback').textContent='Chỉ tô màu nơi Đôn đã ghé. Chạm mảng màu hoặc ghim vàng để xem từng điểm.';
+    document.querySelector('#globe-feedback').textContent='Thu nhỏ xem tên nước · Phóng gần xem địa điểm đã ghé. Bấm tên nước để khám phá từng điểm.';
   } catch {
     globe?.destroy();globe=null;document.querySelector('#globe-canvas').replaceChildren();
     globePromise=null;internationalView='flat';

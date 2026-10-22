@@ -1,3 +1,4 @@
+import {globeLabelGroups} from './globe-labels.js';
 import Globe from 'globe.gl';
 import {loadInternationalRegions,regionColor,visitedRegions,regionView} from './international-regions.js';
 import locations from './country-locations.json';
@@ -25,7 +26,7 @@ export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailur
     .htmlLat(d=>d.lat).htmlLng(d=>d.lng).htmlAltitude(.006)
     .htmlElement(d=>{
       const pin=document.createElement('button');pin.type='button';pin.className='globe-country-pin';
-      if(d.places.length>1){pin.classList.add('globe-city-cluster');pin.textContent=String(d.places.length);pin.title=`${names.of(d.code)}: ${d.places.map(p=>p.name).join(', ')} — bấm để phóng to`;pin.addEventListener('click',e=>{e.stopPropagation();onCountry(d.code);focusPoints(d.places);});}
+      if(d.overview){pin.classList.add('globe-country-overview');pin.textContent='✓';pin.title=`${names.of(d.code)} — bấm để xem địa điểm đã ghi nhận`;pin.addEventListener('click',e=>{e.stopPropagation();onCountry(d.code);focusPoints(d.places);});}
       else {
         const place=d.places[0];pin.textContent='✓';pin.title=place.kind==='country'?`${place.name} — có bài viết · vị trí đại diện quốc gia`:`${place.name} · ${names.of(place.code)} — đã đến`;pin.dataset.placeId=place.id;
         if(place.kind!=='country'){pin.classList.add('globe-city-pin');const label=document.createElement('span');label.className='globe-city-name';label.textContent=place.name;pin.append(label);}
@@ -34,8 +35,8 @@ export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailur
       }
       pin.dataset.countryCode=d.code;
       const label=pin.querySelector('.globe-city-name')||document.createElement('span');label.className='globe-city-name';
-      if(!label.textContent)label.textContent=d.places[0].name;
-      if(d.places.length>1)label.textContent=`${names.of(d.code)} · ${d.places.length} điểm`;
+      if(d.overview)label.textContent=names.of(d.code);
+      else if(!label.textContent)label.textContent=d.places[0].name;
       const region=regions.find(f=>f.properties.placeIds.includes(d.places[0].id));
       if(region){pin.style.setProperty('--place-color',regionColor(region));}
       pin.append(label);pin.setAttribute('aria-label',pin.title);return pin;
@@ -44,20 +45,18 @@ export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailur
   const controls=globe.controls();controls.enablePan=false;controls.minDistance=101;controls.maxDistance=700;controls.autoRotateSpeed=.45;
   function rebuild(force=false){
     frame=0;
-    const groups=[];
-    for(const point of points){
-      const position=globe.getScreenCoords(point.lat,point.lng,.006);
-      const group=point.id===selectedId?null:groups.find(g=>g.code===point.code&&!g.selected&&Math.hypot(position.x-g.screen.x,position.y-g.screen.y)<34);
-      if(group)group.places.push(point);else groups.push({code:point.code,screen:position,places:[point],selected:point.id===selectedId});
-    }
-    const key=groups.map(group=>group.places.map(p=>p.id).join('+')).join('|')+`:${selectedId}`;
-    if(force||key!==clusterKey){clusterKey=key;globe.htmlElementsData(groups.map(g=>({code:g.code,places:g.places,lat:g.places.reduce((s,p)=>s+p.lat,0)/g.places.length,lng:g.places.reduce((s,p)=>s+p.lng,0)/g.places.length})));}
+    const groups=globeLabelGroups(points,globe.pointOfView().altitude);
+    const detail=groups[0]?.overview?'countries':'places';
+    container.dataset.zoomDetail=detail;
+    const key=detail+':'+groups.map(group=>group.places.map(p=>p.id).join('+')).join('|')+`:${selectedId}`;
+    if(force||key!==clusterKey){clusterKey=key;globe.htmlElementsData(groups);}
   }
+
   function schedule(){if(!frame)frame=requestAnimationFrame(()=>rebuild());}
   function focusPoints(places){
     const lat=places.reduce((n,p)=>n+p.lat,0)/places.length,lng=places.reduce((n,p)=>n+p.lng,0)/places.length;
     const span=Math.max(...places.map(p=>p.lat))-Math.min(...places.map(p=>p.lat))+Math.max(...places.map(p=>p.lng))-Math.min(...places.map(p=>p.lng));
-    globe.pointOfView({lat,lng,altitude:Math.min(1.65,Math.max(.24,.24+span/45))},motion.matches?0:650);
+    globe.pointOfView({lat,lng,altitude:Math.min(.95,Math.max(.24,.24+span/45))},motion.matches?0:650);
   }
   function focusRegion(region){
     globe.pointOfView(regionView(region,Math.max(.3,container.clientWidth/container.clientHeight),globe.camera().fov),motion.matches?0:650);

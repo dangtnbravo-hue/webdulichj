@@ -100,3 +100,5 @@ Trong cửa sổ viết/sửa bài, **Xem trước bài đăng** nằm cạnh fo
 ## Tự đánh dấu quốc gia khi viết bài
 
 Chọn quốc gia trong form và lưu bài: bản đồ nháp cùng bộ đếm tự cập nhật. Sau khi **Đăng nhật ký công khai**, khách thấy quốc gia có bài viết được đánh dấu trên cả bản đồ 2D và địa cầu 3D. Quốc gia đã có địa điểm xác nhận giữ nguyên ghim thành phố; nước mới có ghim ghi rõ **Có bài viết · Vị trí đại diện quốc gia**, không suy đoán thành phố từ nội dung. Nhiều bài về cùng một nước chỉ tính một lần; bài Việt Nam không làm tăng số nước ngoài. Mã quốc gia cũ không có bài viết hoặc địa điểm xác nhận vẫn không tự tạo ghim. Xóa/chuyển hết bài của một nước mới sẽ gỡ ghim tự động của nước đó khi lưu/đăng tương ứng; các địa điểm đã xác nhận trước đây giữ nguyên.
+
+Địa cầu 3D tự đổi nhãn theo mức zoom: khi nhìn xa, mỗi nước có một nhãn tên quốc gia; phóng gần hiện riêng từng địa điểm đã ghi nhận tại đúng tọa độ đại diện của địa danh (không phải GPS chuyến đi). Bấm tên nước để phóng tới các điểm trong nước đó. Quốc gia mới chỉ có bài viết vẫn giữ ghim đại diện quốc gia, không tự tạo thành phố chưa được cung cấp. Thu nhỏ trở lại sẽ gom về nhãn quốc gia.
