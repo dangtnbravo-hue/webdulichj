@@ -1,3 +1,4 @@
+import {journeyPlanets,planetPositions} from './journey-planets.js';
 import {journeyCamera,smoothJourneyProgress} from './journey-motion.js';
 export function mountJourneyEntry(app){
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -5,7 +6,7 @@ export function mountJourneyEntry(app){
   root.classList.add('journey-cinematic');
   root.innerHTML=`<header class="journey-nav"><a href="/" class="journey-brand">ĐÔN <span>ĐÚ ĐỞN</span><small>THEO CHÂN MỘT NGƯỜI HAM ĐI</small></a><a href="#journey-choice" class="journey-skip">Bỏ qua <span aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 18 18 6M6 6h12v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a></header>
   <div class="journey-reel"><span id="journey-step" class="journey-scroll-marker" aria-hidden="true"></span><div class="journey-stage">
-  <div class="journey-space" aria-hidden="true"><div class="journey-galaxy"></div><div class="journey-stars"></div><div class="journey-space-fallback"><img src="/images/earth-blue-marble.jpg" alt=""></div><div class="journey-space-planet"></div><div class="journey-earth-locator"><span>Trái Đất</span></div><span class="journey-vietnam-label">VIỆT NAM</span></div><div class="journey-film-shade" aria-hidden="true"></div>
+  <div class="journey-space" aria-hidden="true"><div class="journey-galaxy"></div><div class="journey-stars"></div><div class="journey-planet-field"></div><div class="journey-space-fallback"><img src="/images/earth-blue-marble.jpg" alt=""></div><div class="journey-space-planet"></div><div class="journey-earth-locator"><span>Trái Đất</span></div><span class="journey-vietnam-label">VIỆT NAM</span></div><div class="journey-film-shade" aria-hidden="true"></div>
   <div class="journey-film-copy"><section class="journey-film-scene" aria-labelledby="journey-title"><p class="journey-kicker">01 / NGÂN HÀ</p><h1 id="journey-title">Chào bạn.<br><em>Mình là Đôn.</em></h1><p>Cuộn một vòng nhé.</p></section>
   <section class="journey-film-scene" aria-labelledby="journey-step-title"><p class="journey-kicker">02 / TRÁI ĐẤT</p><h2 id="journey-step-title">Thế giới rộng.</h2><p>Việt Nam ở đâu nhỉ?</p></section>
   <section class="journey-film-scene" aria-labelledby="journey-near-title"><p class="journey-kicker">03 / VIỆT NAM</p><h2 id="journey-near-title">À, nhà đây.</h2><p>Đi gần cũng vui.</p></section></div>
@@ -15,6 +16,14 @@ export function mountJourneyEntry(app){
   const stage=root.querySelector('.journey-stage'),choices=root.querySelector('#journey-choice');
   stage.append(choices);choices.inert=true;
   const galaxy=root.querySelector('.journey-galaxy');
+  const planetField=root.querySelector('.journey-planet-field');
+  const planetElements=journeyPlanets.map(planet=>{
+    const node=document.createElement('div');node.className=`journey-other-planet journey-planet-${planet.id}`;node.dataset.planet=planet.id;node.title=planet.name;
+    node.style.cssText=`left:${planet.x}%;top:${planet.y}%;--planet-size:${planet.size}px;`;
+    if(planet.id==='saturn')node.innerHTML='<i class="journey-saturn-back"></i><span></span><i class="journey-saturn-front"></i>';
+    else node.append(document.createElement('span'));
+    planetField.append(node);return node;
+  });
   const route=root.querySelector('.journey-route-progress'),footprints=root.querySelector('.journey-footprints');
   const length=route.getTotalLength();route.style.strokeDasharray=length;
   const feet=Array.from({length:16},(_,index)=>{
@@ -45,6 +54,11 @@ export function mountJourneyEntry(app){
     galaxy.style.opacity=String(reduced.matches?0:camera.galaxyOpacity);
     galaxy.style.transform=reduced.matches?'none':`scale(${camera.galaxyScale})`;
     planet.style.opacity=String(reduced.matches?1:camera.earthOpacity);
+    const planetFrames=planetPositions(progress);
+    planetElements.forEach((node,i)=>{
+      const state=planetFrames[i];node.style.opacity=String(reduced.matches?0:state.opacity);
+      node.style.transform=reduced.matches?'none':`translate(calc(-50% + ${state.dx}vw),calc(-50% + ${state.dy}vh)) scale(${state.scale})`;
+    });
     root.querySelector('.journey-earth-locator').style.opacity=reduced.matches?'0':String(camera.locator);
     stars.style.opacity=String(reduced.matches ? .4 : camera.stars);
     stars.style.transform=reduced.matches?'none':`scale(${1+progress*.5})`;
