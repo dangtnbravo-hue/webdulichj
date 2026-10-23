@@ -5,6 +5,7 @@ import { internationalPlaces } from './international-places.js';
 import { mountAmbientBackground } from './ambient-background.js';
 import { vietnamPlaces } from './vietnam-places.js';
 import './style.css';
+import './site-theme.css';
 import { mountWorldMap } from './world-map.js';
 const image=(id,w=1000)=>`/images/${id}.jpg`;
 const photos={bay:'photo-1528127269322-539801943592',city:'photo-1559592413-7cec4d0cae2b',sea:'photo-1507525428034-b723cf961d3e',mountain:'photo-1464822759023-fed622ff2c3b',forest:'photo-1441974231531-c6227db76b6e',food:'photo-1504674900247-0877df9cc836'};

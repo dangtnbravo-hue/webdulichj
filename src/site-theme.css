@@ -1,0 +1,55 @@
+/* Shared house palette for the pages reached from the destination chooser. */
+:root{
+ --ink:#23483e;
+ --primary:#326b60;
+ --sage:#718459;
+ --paper:#fffdf2;
+ --canvas:#eceee5;
+ --soft:#f3f3e9;
+ --line:#cbd2bf;
+ --muted:#5d7260;
+ --blue:var(--primary);
+ --green:#567044;
+ color:var(--ink);
+ background:var(--paper);
+}
+#app{background:var(--paper)}
+#app header{background:#fffdf2f5;border-color:var(--line)}
+#app nav,.continent-navigation,dialog{background:var(--paper)}
+#app .logo b{color:var(--sage)}
+#app :is(.search-toggle,.menu-toggle,.logo small,.post-meta,.post>p,.gallery-heading p,.gallery-status,.article-photo figcaption){color:var(--muted)}
+#app :is(.intro-strip,.story-toolbar,.copyright,.journal-group-bar,.map-toolbar,.map-bottom){border-color:var(--line)}
+#app :is(.stories,footer,.article-preview-pane){background:var(--soft)}
+#app :is(.travel-map-hero,.personal-journal,.travel-gallery,.about){background:var(--canvas);border-color:var(--line)}
+#app :is(.world-map-card,.journal-stats,.owner-publish-bar,.author-access,.journal-empty,#article-search,.continent-navigation){background:var(--paper);border-color:var(--line)}
+#app :is(.map-heading-row>div>p:last-child,.map-totals>span,.map-legend span,.map-bottom p,.map-bottom>span,.map-help p,.journal-stats>p,.gallery-heading label){color:var(--muted)}
+#app :is(.map-view-switch,.international-region-controls,#vietnam-province-controls,#vietnam-place-directory,#international-place-directory,.journal-group-filters){background:var(--soft);border-color:var(--line)}
+#app :is(.map-view-switch button,#map-reset){background:var(--soft);color:var(--ink);border-color:var(--line)}
+#app :is(.map-view-switch button[aria-pressed=true],.filters button.active){background:var(--primary);color:var(--paper)}
+#app :is(input,select,textarea),dialog :is(input,select,textarea){color:var(--ink);background:var(--paper);border-color:var(--line)}
+#app :is(.blue:hover,.author-access .owner-quick-actions .button:hover){background:#234f46}
+#app :is(.continent-navigation>a:hover,.continent-navigation>a:focus-visible,.filters button:not(.active):hover){background:#e4e9d8;color:var(--primary)}
+#app :is(.international-region-controls label,.international-region-controls p,#international-place-directory>div:first-child,.international-country-group h3){color:var(--ink)}
+#app .ambient-overlay::before{background:radial-gradient(ellipse at 40% 40%,#7184592e 0%,#7184590f 38%,transparent 65%),radial-gradient(ellipse at 65% 60%,#c2d0b526 0%,#c2d0b50a 40%,transparent 68%)}
+#globe-stage{background:radial-gradient(ellipse at 50% 50%,#23483e,#142d29 70%)}
+#app .globe-controls button{background:#23483edc;border-color:#a9b69c88;color:var(--paper)}
+#app .globe-instructions span{color:#c2d0b5}
+#app .globe-instructions p{color:#e3e8d6}
+#app .hero{background:#23483e}
+#app .hero-shade{background:linear-gradient(90deg,#23483ee8,#23483e88 55%,#23483e22),linear-gradient(0deg,#23483e99,transparent 40%)}
+#app :is(.hero .eyebrow,.hero h1 em,.about-image em){color:#c2d0b5}
+#app .destination:after{background:linear-gradient(0deg,#183b30dd,transparent 85%)}
+#app .category:after{background:linear-gradient(0deg,#183b30d9,#183b3033)}
+#app .photo-lightbox{background:#142d29;color:var(--paper)}
+dialog{color:var(--ink)}
+dialog::backdrop{background:#142d29b3}
+:is(.article-edit-block,#article-live-preview){background:var(--paper);border-color:var(--line)}
+:is(.article-preview-heading h3,.gallery-upload h2){color:var(--ink)}
+:is(.article-preview-heading p,.gallery-upload p,.gallery-upload label){color:var(--muted)}
+#entry-screen{background:var(--canvas);color:var(--ink)}
+#entry-screen:before{background:radial-gradient(ellipse at 0 0,#c2d0b555,transparent 50%),radial-gradient(ellipse at 100% 100%,#f0dfbf55,transparent 50%)}
+#entry-screen :is(.entry-brand>span,.entry-intro h1 em){color:var(--primary)}
+
+#app .map-heading-row h1 em{color:var(--green)}
+#app #vietnam-map,#app #world-map{background:radial-gradient(ellipse at 60% 50%,#f3f3e9,#e2e7d8)}
+#app .vietnam-map-intro{background:#fffdf2ed;border-color:var(--line)}
