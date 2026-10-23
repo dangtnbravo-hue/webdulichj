@@ -9,7 +9,7 @@ export function createJourneySpace(container,{onFailure}){
     .showAtmosphere(true).atmosphereColor('#80cfff').atmosphereAltitude(.16)
     .polygonsData(vietnam).polygonsTransitionDuration(0).polygonAltitude(.003)
     .polygonCapColor(()=>'rgba(103,220,163,.15)').polygonSideColor(()=>'rgba(0,0,0,0)').polygonStrokeColor(()=>'#d6ffb8');
-  const controls=globe.controls();controls.enabled=false;controls.minDistance=100.5;controls.maxDistance=10000;
+  const controls=globe.controls();controls.enabled=false;controls.minDistance=100.5;controls.maxDistance=200000;
   const canvas=globe.renderer().domElement;
   globe.renderer().setPixelRatio(Math.min(devicePixelRatio||1,mobile?1:1.5));
   const size=()=>{if(container.clientWidth&&container.clientHeight){const w=container.clientWidth,h=container.clientHeight;globe.width(w).height(h).globeOffset(w<760?[w*.1,h*.14]:[w*.18,0])}};
@@ -26,5 +26,5 @@ export function createJourneySpace(container,{onFailure}){
   }
   function lost(event){event.preventDefault();destroy();onFailure()}
   canvas.addEventListener('webglcontextlost',lost);
-  return {update(camera){if(destroyed)return;globe.pointOfView({lat:camera.lat,lng:camera.lng,altitude:camera.altitude},0);container.dataset.altitude=String(camera.altitude)},activate(value){active=value;play()},destroy};
+  return {snapshot(){try{globe.renderer().render(globe.scene(),globe.camera());return canvas.toDataURL('image/jpeg',.85)}catch{return null}},update(camera){if(destroyed)return;globe.pointOfView({lat:camera.lat,lng:camera.lng,altitude:camera.altitude},0);container.dataset.altitude=String(camera.altitude)},activate(value){active=value;play()},destroy};
 }

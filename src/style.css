@@ -197,3 +197,28 @@
 @media(max-width:760px){.journey-space-planet{inset:12% -60% -22% -45%}.journey-space-fallback{left:60%;top:60%;width:300px;height:300px}.journey-vietnam-label{left:64%;top:74%;font-size:9px;letter-spacing:2px}.journey-film-copy{top:40%}.journey-cinematic .journey-film-shade{background:linear-gradient(90deg,#020913bb,transparent),linear-gradient(0deg,#02091399,transparent 30%)} }
 @media(prefers-reduced-motion:reduce){.journey-stars{will-change:auto}}
 .journey-cinematic .journey-space-planet{inset:0}
+
+/* A single cinematic approach: galaxy -> small Earth -> small Vietnam -> choices. */
+.journey-galaxy{position:absolute;inset:0;background:#04060e url('/images/journey-milky-way.png') 65% 50%/cover no-repeat;transform-origin:68% 52%;will-change:transform,opacity}
+.journey-space-planet{will-change:opacity}.journey-reel{height:450svh}
+.journey-cinematic .journey-film-copy{left:9%;max-width:650px;top:54%}
+.journey-film-scene h1,.journey-film-scene h2{font-size:clamp(36px,4.4vw,60px);line-height:1.15;letter-spacing:-1.8px;margin-bottom:18px}
+.journey-film-scene .journey-kicker{font-size:9px;margin-bottom:22px;letter-spacing:3px}.journey-film-scene>p:last-child{font-size:13px}
+.journey-cinematic .journey-film-shade{background:linear-gradient(90deg,#0209138c,transparent 66%),linear-gradient(0deg,#02091377,transparent 18%)}
+.journey-stage:after{content:'';position:absolute;inset:0;pointer-events:none;background:#020910;opacity:var(--journey-choice-shade,0);z-index:2}
+.journey-cinematic .journey-destinations{position:absolute;left:50%;top:50%;width:min(860px,88%);padding:30px 0;transform:translate(-50%,-50%);margin:0;background:transparent;color:white;z-index:3;opacity:0;pointer-events:auto}
+.journey-cinematic .journey-destinations h2{font:500 clamp(32px,4vw,46px)/1.2 'Be Vietnam Pro',sans-serif;letter-spacing:-1.5px;margin:0 0 26px;color:white}
+.journey-cinematic .journey-destinations .journey-kicker{color:#c4d5d4;letter-spacing:3px;font-size:8px;margin-bottom:18px}
+.journey-cinematic .journey-destination-grid{margin:28px 0 22px;gap:18px}
+.journey-cinematic .journey-destination{height:210px;border-radius:14px;border:1px solid #d3e9e54d;background:#102a3b77;backdrop-filter:blur(10px)}
+.journey-cinematic .journey-destination>img,.journey-cinematic .journey-destination:after{display:none}
+.journey-cinematic .journey-destination:hover{background:#28555099;border-color:#d4f1dfaa}
+.journey-cinematic .journey-card-top{top:22px;font-size:8px;letter-spacing:1.5px}.journey-cinematic .journey-card-copy{bottom:24px;gap:12px}
+.journey-cinematic .journey-card-copy small{display:none}.journey-cinematic .journey-card-copy strong{font-size:32px;font-weight:500;letter-spacing:-1px}.journey-cinematic .journey-card-copy>span{font-size:11px;padding-top:14px}
+.journey-cinematic .journey-signoff{display:none}.journey-cinematic .journey-original{color:#d3dedb;font-size:10px}
+.journey-cinematic .journey-nav{z-index:4}.journey-cinematic .journey-nav small{display:none}.journey-cinematic .journey-brand{font-size:19px}
+.journey-space-flight{background:#05111c}.journey-space-flight img{object-fit:cover;animation:none}
+@media(max-width:760px){.journey-reel{height:390svh}.journey-cinematic .journey-film-copy{left:8%;right:8%;top:40%}.journey-film-scene h1,.journey-film-scene h2{font-size:36px}.journey-film-scene>p:last-child{font-size:12px}.journey-cinematic .journey-destination-grid{grid-template-columns:1fr;gap:12px}.journey-cinematic .journey-destination{height:155px}.journey-cinematic .journey-card-top{top:16px;font-size:7px}.journey-cinematic .journey-card-copy{bottom:18px;gap:8px}.journey-cinematic .journey-card-copy strong{font-size:27px}.journey-cinematic .journey-card-copy>span{font-size:10px;padding-top:10px}.journey-cinematic .journey-destinations{padding:0}.journey-galaxy{background-position:61% 50%}}
+@media(prefers-reduced-motion:reduce){.journey-galaxy,.journey-space-planet{will-change:auto}.journey-cinematic .journey-destination{backdrop-filter:none}}
+.journey-earth-locator{position:absolute;left:68%;top:50%;width:25px;height:25px;border:1px solid #ceeaffaa;border-radius:50%;transform:translate(-50%,-50%);color:#dcefff;pointer-events:none}.journey-earth-locator span{position:absolute;left:34px;top:3px;font-size:9px;white-space:nowrap;letter-spacing:1px;text-shadow:0 1px 6px #000}.journey-skip>span{display:inline-flex;vertical-align:middle}
+@media(max-width:760px){.journey-earth-locator{left:60%;top:64%;width:20px;height:20px}.journey-earth-locator span{left:28px;font-size:8px}}
