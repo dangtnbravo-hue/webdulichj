@@ -1,25 +1,39 @@
+import {journeyFrames} from './journey-motion.js';
 export function mountJourneyEntry(app){
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
   const root=document.createElement('main');root.id='journey-entry';
+  root.classList.add('journey-cinematic');
   root.innerHTML=`<header class="journey-nav"><a href="/" class="journey-brand">ĐÔN <span>ĐÚ ĐỞN</span><small>THEO CHÂN MỘT NGƯỜI HAM ĐI</small></a><a href="#journey-choice" class="journey-skip">Vào thẳng cho nóng <span aria-hidden="true">↗</span></a></header>
-  <div class="journey-trail" aria-hidden="true"><svg viewBox="0 0 120 1400" preserveAspectRatio="none"><defs><g id="journey-foot"><ellipse cy="-7" rx="5" ry="10"/><ellipse cy="7" rx="4" ry="4"/></g></defs><path class="journey-route-base" d="M60 0 C-10 160 130 230 60 390 S-10 620 60 790 S130 1030 60 1200 L60 1400"/><path class="journey-route-progress" d="M60 0 C-10 160 130 230 60 390 S-10 620 60 790 S130 1030 60 1200 L60 1400"/><g class="journey-footprints"></g></svg></div>
-  <section class="journey-scene journey-hello" aria-labelledby="journey-title"><div class="journey-copy"><p class="journey-kicker">01 / CHÀO BẠN ĐỒNG HÀNH</p><h1 id="journey-title">Chào bạn,<br><em>mình là Đôn.</em></h1><p>Chào mừng tới Đôn Đú Đởn.<br>Mình đi chơi, chụp ảnh, rồi về kể lại.<br>Bạn cứ kéo xuống, chưa phải đi bộ đâu.</p><a class="journey-scroll" href="#journey-step">Đi một đoạn với mình nhé <span aria-hidden="true">↓</span></a></div><div class="journey-hero-art"><img src="/images/photo-1464822759023-fed622ff2c3b.jpg" alt="Núi cao bên mặt hồ xanh — ảnh minh họa hành trình" fetchpriority="high"><span class="journey-photo-tag">ĐI CHƠI LÀ CHÍNH. CÓ ẢNH LÀ VUI.</span><span class="journey-stamp" aria-hidden="true">HAM ĐI<br>HAY KỂ<br>✳</span></div><span class="journey-margin-note" aria-hidden="true">CUỘN TIẾP ĐI. CÒN NHIỀU CHỖ ĐỂ ĐÚ.</span></section>
-  <section id="journey-step" class="journey-scene journey-onward" aria-labelledby="journey-step-title"><div class="journey-story-art"><img src="/images/photo-1528127269322-539801943592.jpg" alt="Cảnh núi đá và mặt nước vịnh Hạ Long — ảnh minh họa" loading="lazy"><span>Đi một chuyến, có chuyện tám cả buổi.</span></div><div class="journey-copy"><p class="journey-kicker">02 / CHÂN CHƯA MỎI ĐÂU</p><h2 id="journey-step-title">Đi xa cũng được.<br><em>Đi gần cũng vui.</em></h2><p>Không phải cứ ra nước ngoài mới là đi chơi.<br>Ở Việt Nam cũng còn khối chỗ để khám phá.</p><p>Chỗ nào đã ghé, ảnh nào đã chụp,<br>mình gom vào đây. Bạn cứ xem, chưa cần xếp vali.</p><a class="journey-scroll" href="#journey-choice">Rồi, chọn chỗ đi thôi <span aria-hidden="true">↓</span></a></div></section>
-  <section id="journey-choice" class="journey-destinations" aria-labelledby="journey-choice-title" tabindex="-1"><p class="journey-kicker">03 / TỚI NGÃ RẼ RỒI</p><h2 id="journey-choice-title">Hôm nay,<br><em>mình đi đâu?</em></h2><p>Thích đi xa hay đi quanh nhà? Chọn một bên, mình dẫn đường.</p><div class="journey-destination-grid"><a class="journey-destination" href="/the-gioi/" data-journey-flight="international"><img src="/images/photo-1464822759023-fed622ff2c3b.jpg" alt=""><span class="journey-card-top">01 / ĐI XA MỘT CHÚT <b aria-hidden="true">↗</b></span><span class="journey-card-copy"><small>CHUYỆN NGOÀI BIÊN GIỚI</small><strong>Thế giới<br>của Đôn</strong><span>Ra ngoài biên giới chơi <b aria-hidden="true">→</b></span></span></a><a class="journey-destination" href="/viet-nam/" data-journey-flight="vietnam"><img src="/images/photo-1528127269322-539801943592.jpg" alt=""><span class="journey-card-top">02 / ĐI GẦN CŨNG VUI <b aria-hidden="true">↗</b></span><span class="journey-card-copy"><small>ĐI DỌC DẢI CHỮ S</small><strong>Việt Nam<br>của Đôn</strong><span>Đi một vòng Việt Nam <b aria-hidden="true">→</b></span></span></a></div><p class="journey-signoff">Đi có hội. Kể có Đôn.</p><a class="journey-original" href="/">Về trang chủ</a></section><p class="sr-only" id="journey-flight-status" role="status"></p>`;
+  <div class="journey-reel"><span id="journey-step" class="journey-scroll-marker" aria-hidden="true"></span><div class="journey-stage">
+  <div class="journey-frames" aria-hidden="true"><img src="/images/photo-1464822759023-fed622ff2c3b.jpg" alt="" fetchpriority="high"><img src="/images/photo-1441974231531-c6227db76b6e.jpg" alt="" loading="eager"><img src="/images/photo-1528127269322-539801943592.jpg" alt="" loading="eager"></div><div class="journey-film-shade" aria-hidden="true"></div>
+  <div class="journey-film-copy"><section class="journey-film-scene" aria-labelledby="journey-title"><p class="journey-kicker">01 / CHÀO BẠN ĐỒNG HÀNH</p><h1 id="journey-title">Chào bạn,<br><em>mình là Đôn.</em></h1><p>Mình đi chơi, chụp ảnh, rồi về kể lại.<br>Bạn cứ kéo xuống, chưa phải đi bộ đâu.</p></section>
+  <section class="journey-film-scene" aria-labelledby="journey-step-title"><p class="journey-kicker">02 / CHÂN CHƯA MỎI ĐÂU</p><h2 id="journey-step-title">Đi một vòng.<br><em>Kể một đống.</em></h2><p>Đổi cảnh một chút, có chuyện tám cả buổi.<br>Có ảnh thì khoe. Có chỗ hay thì chỉ.</p></section>
+  <section class="journey-film-scene" aria-labelledby="journey-near-title"><p class="journey-kicker">03 / ĐI GẦN CŨNG VUI</p><h2 id="journey-near-title">Chưa cần hộ chiếu.<br><em>Vẫn có chỗ để đú.</em></h2><p>Ở Việt Nam cũng còn khối nơi để khám phá.<br>Đi xa hay đi gần? Sắp tới lượt bạn chọn.</p></section></div>
+  <div class="journey-film-bottom"><a class="journey-scroll" href="#journey-choice">Cuộn tiếp, còn nhiều chỗ để đú <span aria-hidden="true">↓</span></a><div class="journey-trail" aria-hidden="true"><svg viewBox="0 0 360 40"><defs><g id="journey-foot"><ellipse cy="-5" rx="3" ry="6"/><ellipse cy="4" rx="2.5" ry="2.5"/></g></defs><path class="journey-route-base" d="M12 20 Q95 3 180 20 T348 20"/><path class="journey-route-progress" d="M12 20 Q95 3 180 20 T348 20"/><g class="journey-footprints"></g></svg></div><span class="journey-film-count" aria-hidden="true">01 / 03</span></div></div></div>
+<section id="journey-choice" class="journey-destinations" aria-labelledby="journey-choice-title" tabindex="-1"><p class="journey-kicker">03 / TỚI NGÃ RẼ RỒI</p><h2 id="journey-choice-title">Hôm nay,<br><em>mình đi đâu?</em></h2><p>Thích đi xa hay đi quanh nhà? Chọn một bên, mình dẫn đường.</p><div class="journey-destination-grid"><a class="journey-destination" href="/the-gioi/" data-journey-flight="international"><img src="/images/photo-1464822759023-fed622ff2c3b.jpg" alt=""><span class="journey-card-top">01 / ĐI XA MỘT CHÚT <b aria-hidden="true">↗</b></span><span class="journey-card-copy"><small>CHUYỆN NGOÀI BIÊN GIỚI</small><strong>Thế giới<br>của Đôn</strong><span>Ra ngoài biên giới chơi <b aria-hidden="true">→</b></span></span></a><a class="journey-destination" href="/viet-nam/" data-journey-flight="vietnam"><img src="/images/photo-1528127269322-539801943592.jpg" alt=""><span class="journey-card-top">02 / ĐI GẦN CŨNG VUI <b aria-hidden="true">↗</b></span><span class="journey-card-copy"><small>ĐI DỌC DẢI CHỮ S</small><strong>Việt Nam<br>của Đôn</strong><span>Đi một vòng Việt Nam <b aria-hidden="true">→</b></span></span></a></div><p class="journey-signoff">Đi có hội. Kể có Đôn.</p><a class="journey-original" href="/">Về trang chủ</a></section><p class="sr-only" id="journey-flight-status" role="status"></p>`;
   app.before(root);
   const route=root.querySelector('.journey-route-progress'),footprints=root.querySelector('.journey-footprints');
   const length=route.getTotalLength();route.style.strokeDasharray=length;
-  const feet=Array.from({length:22},(_,index)=>{
-    const point=route.getPointAtLength(length*(index+.5)/22),next=route.getPointAtLength(Math.min(length,length*(index+.5)/22+3));
+  const feet=Array.from({length:16},(_,index)=>{
+    const point=route.getPointAtLength(length*(index+.5)/16),next=route.getPointAtLength(Math.min(length,length*(index+.5)/16+3));
     const foot=document.createElementNS('http://www.w3.org/2000/svg','use');foot.setAttribute('href','#journey-foot');
-    const angle=Math.atan2(next.y-point.y,next.x-point.x)*180/Math.PI-90;
-    foot.setAttribute('transform',`translate(${point.x+(index%2?9:-9)} ${point.y}) rotate(${angle+(index%2?9:-9)})`);footprints.append(foot);return foot;
+    const angle=Math.atan2(next.y-point.y,next.x-point.x)*180/Math.PI+90;
+    foot.setAttribute('transform',`translate(${point.x} ${point.y+(index%2?7:-7)}) rotate(${angle+(index%2?9:-9)})`);footprints.append(foot);return foot;
   });
+  const reel=root.querySelector('.journey-reel'),images=[...root.querySelectorAll('.journey-frames img')],scenes=[...root.querySelectorAll('.journey-film-scene')];
   let frame=0;
   function update(){
-    frame=0;const start=root.querySelector('.journey-trail').getBoundingClientRect().top+scrollY;
-    const end=root.querySelector('#journey-choice').getBoundingClientRect().top+scrollY;
-    const progress=reduced.matches?1:Math.max(0,Math.min(1,(scrollY+innerHeight*.7-start)/Math.max(1,end-start)));
+    frame=0;
+    const distance=Math.max(1,reel.offsetHeight-innerHeight);
+    const progress=Math.max(0,Math.min(1,-reel.getBoundingClientRect().top/distance));
+    const frames=journeyFrames(progress);
+    const current=frames.reduce((best,value,i)=>value.opacity>frames[best].opacity?i:best,0);
+    images.forEach((image,i)=>{
+      image.style.opacity=reduced.matches?(i===current?'1':'0'):String(frames[i].opacity);
+      image.style.transform=reduced.matches?'none':`scale(${frames[i].scale})`;
+      scenes[i].style.opacity=i===current?'1':'0';scenes[i].inert=i!==current;scenes[i].setAttribute('aria-hidden',String(i!==current));
+    });
+    root.dataset.scene=String(current);root.querySelector('.journey-film-count').textContent=`0${current+1} / 03`;
     route.style.strokeDashoffset=length*(1-progress);feet.forEach((foot,i)=>foot.style.opacity=(i+.5)/feet.length<=progress?'1':'0');
   }
   function schedule(){if(!frame)frame=requestAnimationFrame(update)}
