@@ -112,3 +112,7 @@ Menu **Ảnh hành trình** mở thư viện tại `/the-gioi/#photo-gallery` ho
 Đăng nhập tài khoản chủ website rồi mở **Ảnh hành trình → + Thêm ảnh**. Nhập tên bộ ảnh, chọn quốc gia (và miền khi ở Việt Nam), ngày chụp nếu nhớ; chọn tối đa 12 ảnh JPG/PNG/WebP, mỗi ảnh tối đa 15 MB. Kiểm tra ảnh xem trước, nhập chú thích hoặc bỏ ảnh không muốn đăng. Bấm **Đăng ảnh công khai** và xác nhận: chỉ bộ ảnh này được tải lên, không đăng kèm bài viết còn ở bản nháp. Khi lỗi mạng, form giữ ảnh đã chọn để thử lại.
 
 Bộ ảnh độc lập dùng chung kho lưu trữ và quyền chủ website của Supabase, không cần chạy lại SQL; ảnh xuất hiện trong thư viện, không tạo thẻ bài mới ở danh sách bài viết công khai. Bộ ảnh đã đăng được đưa vào danh sách quản trị để chỉnh sửa sau; các bài và bộ ảnh công khai khác được giữ nguyên. Khách không đăng nhập không thấy nút thêm ảnh.
+
+## Bản nháp trang mở đầu theo bước chân
+
+Mở `/?ban-nhap=hanh-trinh` để thử lời chào → đường dấu chân theo thao tác cuộn → hai hướng Thế giới / Việt Nam. Nút ở đầu trang cho phép tới thẳng lựa chọn; chọn điểm đến sẽ mở rộng ảnh toàn màn hình rồi chuyển vào trang tương ứng. Khi bật giảm chuyển động, dấu chân hiện sẵn và bỏ chuyển cảnh. Đây là bản thử riêng, trang chủ `/` và các trang nội dung hiện tại được giữ nguyên. Ảnh dùng lại tài sản giao diện sẵn có để minh họa bố cục, không được giới thiệu là ảnh chuyến đi của tác giả.
