@@ -19,6 +19,10 @@ export function mountEntryScreen({start}){
     return;
   }
   app.hidden=true;
+  if(new URLSearchParams(location.search).get('ban-nhap')==='ngoi-nha'){
+    import('./house-entry.js').then(({mountHouseEntry})=>mountHouseEntry(app));
+    return;
+  }
   if(new URLSearchParams(location.search).get('ban-nhap')==='hanh-trinh'){
     import('./journey-entry.js').then(({mountJourneyEntry})=>mountJourneyEntry(app));
     return;
