@@ -222,7 +222,6 @@ function setRegion(nextRegion) {
   document.querySelector('#vietnam-stage').hidden=!domestic;
   document.querySelector('#vietnam-place-directory').hidden=!domestic;
   document.querySelector('#international-place-directory').hidden=domestic;
-  document.querySelector('.map-photo-preview').hidden=domestic;
   document.querySelector('#vietnam-province-controls').hidden=!domestic;
   document.querySelector('#globe-country-panel').hidden=true;
   document.querySelector('#map-reset').textContent=domestic?'Toàn Việt Nam':'Toàn thế giới';

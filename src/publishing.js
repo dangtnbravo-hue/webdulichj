@@ -1,5 +1,5 @@
 import {createGalleryUpload} from './gallery-upload.js';
-import {createPhotoGallery,galleryPhotos} from './photo-gallery.js';
+import {createPhotoGallery} from './photo-gallery.js';
 import {articleCountryCodes} from './international-places.js';
 import {requestedVietnamRegion,memoryInVietnamRegion} from './vietnam-regions.js';
 import {requestedContinent,countryInContinent} from './continents.js';
@@ -21,18 +21,6 @@ const locallyKnownAlbums=new Set();
 function refreshGallery(){
   const memories=published.memories.filter(m=>(pageSection==='vietnam'?m.country==='VN':m.country!=='VN')&&countryInContinent(m.country,selectedContinent)&&memoryInVietnamRegion(m,selectedVietnamRegion));
   photoGallery.update(memories);
-  const preview=document.querySelector('.map-photo-preview-grid');
-  if(preview){
-    preview.replaceChildren();
-    const photos=galleryPhotos(memories).slice(0,3);
-    for(const photo of photos){
-      const link=document.createElement('a');link.href='#photo-gallery';
-      const image=document.createElement('img');image.src=photo.url;image.alt=photo.caption||photo.title;image.loading='lazy';image.decoding='async';
-      const caption=document.createElement('span');caption.textContent=photo.caption||photo.title;
-      link.append(image,caption);preview.append(link);
-    }
-    document.querySelector('.map-photo-preview-status').hidden=photos.length>0;
-  }
   document.querySelector('#my-journal')?.after(photoGallery.section);
 }
 const pageSection=document.body.dataset.section;
