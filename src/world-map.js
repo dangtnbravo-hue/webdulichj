@@ -76,10 +76,19 @@ function appendRegionArea(box,feature){
   const label=document.createElement('small');label.textContent=`Phạm vi: ${feature.properties.name}. ${feature.properties.code==='SG'?'Đường bao quốc gia gồm vùng nước ven bờ theo nguồn bản đồ. ':''}Số liệu ước tính từ hình học bản đồ.`;
   box.append(area,label);
 }
+function highlightDestination(){
+  document.querySelectorAll('[data-destination-country]').forEach(group=>{
+    group.classList.toggle('is-selected',group.dataset.destinationCountry===selectedCode);
+    group.querySelectorAll('[data-international-place]').forEach(button=>{
+      if(button.dataset.internationalPlace===selectedPlace?.id)button.setAttribute('aria-current','location');
+      else button.removeAttribute('aria-current');
+    });
+  });
+}
 function showInternationalRegion(feature,fly=true){
   if(!regionHasVisit(feature,visited))return;
   if(region==='vietnam')setRegion('international');
-  selectedRegion=feature;selectedPlace=null;selectedCode=feature.properties.code;
+  selectedRegion=feature;selectedPlace=null;selectedCode=feature.properties.code;highlightDestination();
   const p=feature.properties;
   const box=document.createElement('div');box.className='country-map-popup international-region-popup';
   const title=document.createElement('strong');title.textContent=p.name;box.append(title);
@@ -126,7 +135,7 @@ function showInternationalPlace(id,fly=true) {
   const place=internationalPlaces.find(p=>p.id===id);
   if(!place||!visited.has(place.code))return;
   if(region==='vietnam')setRegion('international');
-  selectedPlace=place;selectedRegion=null;selectedCode=place.code;
+  selectedPlace=place;selectedRegion=null;selectedCode=place.code;highlightDestination();
   const boundary=internationalRegions.find(f=>f.properties.placeIds.includes(place.id));
   document.querySelector('#international-region-select').value=boundary?.properties.regionId||'';
   const box=document.createElement('div');box.className='country-map-popup international-place-popup';
@@ -149,7 +158,7 @@ function showCountry(code,fly=true) {
   if(!locations[code]) return;
   if(code==='VN'&&region!=='vietnam')setRegion('vietnam');
   if(code!=='VN'&&region==='vietnam')setRegion('international');
-  selectedCode=code;selectedPlace=null;selectedRegion=null;
+  selectedCode=code;selectedPlace=null;selectedRegion=null;highlightDestination();
   if(region==='vietnam') {vietnamMap.show(popup('VN'));return;}
   if(viewMode==='globe') {
     if(fly)globe?.focus(code);
@@ -184,7 +193,7 @@ function refresh() {
   }
 }
 function resetMap() {
-  selectedCode=null;selectedPlace=null;selectedRegion=null;document.querySelector('#international-region-select').value='';map.closePopup();document.querySelector('#globe-country-panel').hidden=true;
+  selectedCode=null;selectedPlace=null;selectedRegion=null;highlightDestination();document.querySelector('#international-region-select').value='';map.closePopup();document.querySelector('#globe-country-panel').hidden=true;
   if(region==='vietnam'){vietnamMap?.reset();return;}
   globe?.reset();map.fitBounds([[-55,-175],[75,180]],{padding:[12,12],animate:false});
 }
@@ -210,7 +219,7 @@ async function switchView(mode) {
 }
 function setRegion(nextRegion) {
   if(section&&nextRegion!==section){location.assign(nextRegion==='vietnam'?'/viet-nam/':'/the-gioi/');return;}
-  region=nextRegion;selectedCode=null;selectedPlace=null;selectedRegion=null;map.closePopup();
+  region=nextRegion;selectedCode=null;selectedPlace=null;selectedRegion=null;highlightDestination();map.closePopup();
   const domestic=region==='vietnam';
   document.querySelector('.travel-map-hero').dataset.region=region;
   document.querySelectorAll('[data-map-region]').forEach(control=>{const selected=control.dataset.mapRegion===region;control.classList.toggle('active',selected);if(control.tagName==='BUTTON')control.setAttribute('aria-pressed',String(selected));});
@@ -255,7 +264,7 @@ export function mountWorldMap({initialRegion='international'}={}) {
   document.querySelector('#show-flat-map').addEventListener('click',()=>switchView('flat'));
   document.querySelector('#globe-zoom-in').addEventListener('click',()=>globe?.zoom(.8));document.querySelector('#globe-zoom-out').addEventListener('click',()=>globe?.zoom(1.25));
   document.querySelector('#globe-rotate').addEventListener('click',event=>{const rotating=globe?.rotate()||false;event.currentTarget.setAttribute('aria-pressed',String(rotating));event.currentTarget.textContent=rotating?'Dừng xoay':'Tự xoay';});
-  document.querySelector('.globe-panel-close').addEventListener('click',()=>{document.querySelector('#globe-country-panel').hidden=true;selectedCode=null;selectedPlace=null;selectedRegion=null;});
+  document.querySelector('.globe-panel-close').addEventListener('click',()=>{document.querySelector('#globe-country-panel').hidden=true;selectedCode=null;selectedPlace=null;selectedRegion=null;highlightDestination();});
   window.addEventListener('journal:updated',event=>{articleCountries=event.detail.articleCountries||[];visited=new Set(event.detail.countries);if(vietnamPlaces.length)visited.add('VN');ready=event.detail.ready;canEdit=Boolean(event.detail.canEdit);vietnamMemories=event.detail.vietnamMemories||0;refresh();});
   window.addEventListener('journal:save-error',()=>{if(selectedCode)showCountry(selectedCode,false);document.querySelector('#map-status').textContent='Chưa lưu được dấu chân. Kiểm tra quyền hoặc dung lượng lưu trữ trong nhật ký.';});
   new ResizeObserver(()=>map.invalidateSize({pan:false})).observe(document.querySelector('#world-map'));

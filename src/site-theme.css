@@ -143,3 +143,29 @@ dialog::backdrop{background:#142d29b3}
  #app #travel-map[data-region=international] .international-country-group{transition:none}
  #app #travel-map[data-region=international] .international-country-group:hover,#app #travel-map[data-region=international] .international-country-group:focus-within{transform:none}
 }
+
+/* Clear, wrapping text and stronger interactive controls in the destination column. */
+#app #travel-map[data-region=international] #international-place-directory{color:#23483e;overflow:visible;min-width:0}
+#app #travel-map[data-region=international] #international-place-directory :is(h3,strong,p,small,label,span,button){white-space:normal;overflow-wrap:anywhere}
+#app #travel-map[data-region=international] #international-place-directory>div:first-child strong{font-size:28px;line-height:1.4;color:#173b30}
+#app #travel-map[data-region=international] #international-place-directory>div:first-child span{display:block;font-size:13px;line-height:1.8;color:#42583f}
+#app #travel-map[data-region=international] .international-region-controls{padding:20px;margin:0 0 20px;background:#fffdf2;border:1px solid #acb99b;border-radius:14px;box-shadow:0 6px 20px #23483e08}
+#app #travel-map[data-region=international] .international-region-controls label{font-size:14px;letter-spacing:0;line-height:1.5;color:#23483e}
+#app #travel-map[data-region=international] .international-region-controls select{display:block;width:100%;max-width:100%;min-width:0;min-height:48px;font-size:14px;color:#173b30;background:#f0f2e7;border:1px solid #8c9d7b;padding:12px}
+#app #travel-map[data-region=international] .international-region-controls p{font-size:12px;line-height:1.8;color:#3f573e;margin:14px 0 8px}
+#app #travel-map[data-region=international] .international-region-controls small{display:block;font-size:11px;line-height:1.8;color:#52634c}
+#app #travel-map[data-region=international] .international-destination-groups{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#app #travel-map[data-region=international] .international-country-group{min-width:0;padding:20px 16px;background:#fffdf2;border-color:#c0cbb0;box-shadow:0 6px 18px #23483e08}
+#app #travel-map[data-region=international] .international-country-group::after{color:#61734f;font-weight:700}
+#app #travel-map[data-region=international] .international-country-group h3{font-size:16px;line-height:1.5;margin:0 0 14px;color:#173b30}
+#app #travel-map[data-region=international] .international-country-group>div{gap:8px}
+#app #travel-map[data-region=international] .international-country-group button{max-width:100%;min-height:44px;margin:0;padding:9px 12px;border:1px solid #afbd9b;border-radius:9px;background:#edf1e2;color:#23483e;font-size:13px;font-weight:600;line-height:1.6;text-align:left}
+#app #travel-map[data-region=international] .international-country-group button:hover{background:#dce5cc;border-color:#718459}
+#app #travel-map[data-region=international] .international-country-group.is-selected{border-color:#567044;box-shadow:0 0 0 1px #567044,0 8px 24px #23483e12}
+#app #travel-map[data-region=international] .international-country-group button[aria-current=location]{background:#326b60;color:#fffdf2;border-color:#326b60}
+@media(min-width:761px) and (max-width:1100px){
+ #app #travel-map[data-region=international] .international-destination-groups{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:400px){
+ #app #travel-map[data-region=international] .international-destination-groups{grid-template-columns:minmax(0,1fr)}
+}
