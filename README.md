@@ -1,6 +1,6 @@
 # Đôn Đú Đởn
 
-Website du lịch tiếng Việt, màu xanh dương/xanh lá, lời dẫn tinh nghịch, JavaScript/Vite. Chủ website đăng bài; khách chỉ xem, không cần tài khoản.
+Website du lịch tiếng Việt, tông kem/xanh lá trầm, lời dẫn tinh nghịch, JavaScript/Vite. Chủ website đăng bài; khách chỉ xem, không cần tài khoản.
 
 ## Chạy và kiểm tra
 
@@ -16,6 +16,12 @@ npm run dev
 npm run build
 npm run preview
 ```
+
+## Trang chủ chính thức
+
+Website: https://dang-repo.vercel.app/
+
+Trang chủ mở trực tiếp hành trình căn nhà 3D: cuộn từ bên ngoài vào bàn bản đồ, rồi chọn **Thế giới** hoặc **Việt Nam**. Mã nguồn giao diện ở `src/house-entry.js`, `src/house-entry.css`, `src/house-scene.js` và `src/house-motion.js`; bảng màu chung ở `src/site-theme.css`. Không cần tham số bản nháp; link căn nhà cũ tự bỏ tham số này.
 
 ## Hai khu vực
 
