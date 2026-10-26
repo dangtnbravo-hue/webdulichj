@@ -53,3 +53,53 @@ dialog::backdrop{background:#142d29b3}
 #app .map-heading-row h1 em{color:var(--green)}
 #app #vietnam-map,#app #world-map{background:radial-gradient(ellipse at 60% 50%,#f3f3e9,#e2e7d8)}
 #app .vietnam-map-intro{background:#fffdf2ed;border-color:var(--line)}
+
+/* Let the international globe sit directly on the page instead of in a dark card. */
+#app #travel-map[data-region=international] .world-map-card{background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible}
+#app .travel-map-hero[data-region=international] #globe-stage{background:transparent;color:var(--ink)}
+#app .travel-map-hero[data-region=international] .globe-instructions span{color:var(--primary)}
+#app .travel-map-hero[data-region=international] :is(.globe-instructions p,#globe-feedback,.globe-credits){color:var(--muted)}
+#app .travel-map-hero[data-region=international] .globe-controls button{background:var(--paper);color:var(--ink);border-color:var(--line)}
+#app .travel-map-hero[data-region=international] .globe-controls button[aria-pressed=true]{background:var(--primary);color:var(--paper)}
+
+/* Photos, globe and destination details share a single horizontal composition. */
+#app .travel-map-hero[data-region=international]>.container{width:min(1480px,94%)}
+#app #travel-map[data-region=international] .world-map-card{display:grid;grid-template-columns:minmax(180px,.8fr) minmax(380px,1.8fr) minmax(260px,1fr);gap:24px;align-items:start}
+#app .travel-map-hero[data-region=international] .map-toolbar{grid-column:1/-1;padding:0 0 18px}
+#app .travel-map-hero[data-region=international] .map-photo-preview{grid-column:1;grid-row:2;padding-top:24px;min-width:0}
+#app .map-photo-preview .eyebrow{font-size:8px;margin-bottom:12px}
+#app .map-photo-preview h2{font-size:24px;letter-spacing:-.8px}
+.map-photo-preview-grid{display:grid;gap:16px}
+.map-photo-preview-grid a{display:grid;gap:8px}
+.map-photo-preview-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px}
+.map-photo-preview-grid span,.map-photo-preview-status{font-size:11px;line-height:1.8;color:var(--muted)}
+.map-photo-more{display:inline-block;margin-top:18px;font-size:11px;font-weight:600;color:var(--primary)}
+#app .travel-map-hero[data-region=international] .map-stage{grid-column:2;grid-row:2;min-width:0}
+#app .travel-map-hero[data-region=international] #globe-stage{height:600px}
+#app .travel-map-hero[data-region=international] .globe-instructions{top:12px;left:0;max-width:55%}
+#app .travel-map-hero[data-region=international] .globe-controls{top:12px;right:0}
+#app .travel-map-hero[data-region=international] #international-place-directory{grid-column:3;grid-row:2;padding:24px 0 0;border:0;background:transparent;min-width:0}
+#app .travel-map-hero[data-region=international] .international-destination-groups{grid-template-columns:1fr 1fr;gap:18px 12px}
+#app .travel-map-hero[data-region=international] .international-region-controls{padding:14px 0;border:0;background:transparent}
+#app .travel-map-hero[data-region=international] .international-region-controls select{width:100%;min-width:0}
+#app .travel-map-hero[data-region=international] .map-bottom{grid-column:1/-1;padding:12px 0}
+@media(max-width:1100px){
+ #app #travel-map[data-region=international] .world-map-card{grid-template-columns:minmax(0,1fr) minmax(250px,.65fr)}
+ #app .travel-map-hero[data-region=international] .map-stage{grid-column:1;grid-row:2}
+ #app .travel-map-hero[data-region=international] #international-place-directory{grid-column:2;grid-row:2}
+ #app .travel-map-hero[data-region=international] .map-photo-preview{grid-column:1/-1;grid-row:3}
+ .map-photo-preview-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ #app .travel-map-hero[data-region=international]>.container{width:88%}
+ #app #travel-map[data-region=international] .world-map-card{display:flex;flex-direction:column;gap:24px}
+ #app #travel-map[data-region=international] .world-map-card>*{width:100%}
+ #app .travel-map-hero[data-region=international] .map-toolbar{order:0}
+ #app .travel-map-hero[data-region=international] .map-stage{order:1}
+ #app .travel-map-hero[data-region=international] #globe-stage{height:470px}
+ #app .travel-map-hero[data-region=international] .globe-controls{top:65px}
+ #app .travel-map-hero[data-region=international] #international-place-directory{order:2;padding-top:0}
+ #app .travel-map-hero[data-region=international] .map-photo-preview{order:3;padding-top:0}
+ #app .travel-map-hero[data-region=international] .map-bottom{order:4;align-items:start}
+ .map-photo-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}

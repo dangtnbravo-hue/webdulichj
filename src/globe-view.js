@@ -14,7 +14,7 @@ export async function createGlobe(container,{onCountry,onPlace,onRegion,onFailur
   let autoRotate=false,visible=true,active=true,disposed=false;
   const motion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const globe=new Globe(container,{rendererConfig:{antialias:!mobile,alpha:true,powerPreference:mobile?'low-power':'default'},waitForGlobeReady:false})
-    .backgroundColor('#142d29').globeImageUrl('/images/earth-blue-marble.jpg')
+    .backgroundColor('rgba(0,0,0,0)').globeImageUrl('/images/earth-blue-marble.jpg')
     .showAtmosphere(true).atmosphereColor('#5cbfff').atmosphereAltitude(.17)
     .polygonsData([]).polygonsTransitionDuration(0)
     .polygonAltitude(.004).polygonCapCurvatureResolution(8)
