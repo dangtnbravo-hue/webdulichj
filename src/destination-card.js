@@ -12,13 +12,17 @@ export function destinationStory(stories,selection){
 }
 export function mountDestinationCard(host,{onOpen}){
  let stories=[],selection=null;
+ const intro=document.createElement('section');intro.className='destination-intro';intro.setAttribute('aria-labelledby','destination-intro-title');
+ intro.innerHTML='<p class="destination-intro-kicker">CHUYỆN ĐI · GÓC NHÌN CỦA ĐÔN</p><h2 id="destination-intro-title">Đi cho biết.<br><em>Về có chuyện kể.</em></h2><p class="destination-intro-copy">Có nơi mình thích, có nơi đi một lần là đủ. Đây là những chỗ mình đã ghé, qua góc nhìn của mình — bạn cứ xoay bản đồ mà xem.</p><p class="destination-intro-signature">Đôn · Hơi ham đi, hơi hay kể.</p><div class="destination-intro-guide"><span aria-hidden="true">01</span><p>Xoay địa cầu. Chọn một ghim.<br><strong>Chuyện ở nơi đó sẽ hiện tại đây.</strong></p></div>';
  const article=document.createElement('article');article.className='destination-feature';
  article.innerHTML='<p class="destination-feature-label"></p><div class="destination-feature-visual"><img hidden alt=""><div class="destination-feature-placeholder" aria-hidden="true"><span><svg width="56" height="56" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="25" stroke="currentColor" stroke-width="1.5"/><ellipse cx="32" cy="32" rx="11" ry="25" stroke="currentColor" stroke-width="1.5"/><path d="M8 24h48M8 40h48M7 32h50" stroke="currentColor" stroke-width="1.5"/></svg></span><small>ĐI CÓ HỘI · KỂ CÓ ĐÔN</small></div></div><div class="destination-feature-body"><p class="destination-feature-country"></p><h2></h2><p class="destination-feature-excerpt"></p><p class="destination-feature-hint"></p><div class="destination-feature-action"></div></div>';
  const status=document.createElement('p');status.className='sr-only';status.setAttribute('role','status');
- const reset=document.createElement('button');reset.type='button';reset.className='destination-feature-reset';reset.textContent='Về chuyến đi gần nhất';
+ const reset=document.createElement('button');reset.type='button';reset.className='destination-feature-reset';reset.textContent='Về lời giới thiệu';
  reset.addEventListener('click',()=>{selection=null;render();});
- host.prepend(article,status,reset);
+ host.prepend(intro,article,status,reset);
  function render(){
+  intro.hidden=Boolean(selection);article.hidden=!selection;reset.hidden=!selection;
+  if(!selection){status.textContent='Đi cho biết. Về có chuyện kể.';return;}
   const story=destinationStory(stories,selection);
   const country=selection?.code||story?.country;
   const title=selection?.name||(selection?.code?names.of(selection.code):story?.title)||'Chọn một ghim, khui một chuyện.';

@@ -189,3 +189,15 @@ dialog::backdrop{background:#142d29b3}
 .destination-feature-reset{border:0;background:transparent;color:#326b60;padding:18px 0;font:inherit;font-size:12px;text-align:left}
 .destination-feature-reset:hover{text-decoration:underline}
 @media(max-width:760px){.destination-feature-body{padding:22px}.destination-feature-visual{aspect-ratio:16/9}}
+
+.destination-intro{padding:42px 8px 20px;color:#23483e}
+.destination-intro-kicker{font-size:10px;font-weight:700;letter-spacing:2px;color:#567044;margin-bottom:30px}
+#app #travel-map[data-region=international] .destination-intro h2{font-size:clamp(36px,3.5vw,52px);font-weight:700;line-height:1.2;letter-spacing:-1.8px;margin-bottom:26px;overflow-wrap:normal}
+.destination-intro h2 em{color:#567044;font-style:normal}
+.destination-intro-copy{max-width:420px;font-size:15px;line-height:2;color:#42583f;margin-bottom:24px}
+.destination-intro-signature{font-size:12px;font-weight:600;color:#326b60;margin-bottom:40px}
+.destination-intro-guide{display:flex;align-items:center;gap:18px;padding-top:24px;border-top:1px solid #b5c2a3}
+.destination-intro-guide>span{display:grid;place-items:center;flex-shrink:0;width:42px;height:42px;border:1px solid #9dad89;border-radius:50%;font-size:11px;color:#567044}
+.destination-intro-guide p{font-size:12px;line-height:1.9;margin:0;color:#52634c}
+.destination-intro-guide strong{font-weight:500;color:#23483e}
+@media(max-width:760px){.destination-intro{padding:12px 0 24px}.destination-intro-kicker{margin-bottom:22px}#app #travel-map[data-region=international] .destination-intro h2{font-size:38px;letter-spacing:-1.3px}.destination-intro-copy{font-size:14px}.destination-intro-signature{margin-bottom:28px}}
