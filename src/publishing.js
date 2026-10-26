@@ -1,3 +1,4 @@
+import {mountDestinationCard} from './destination-card.js';
 import {createGalleryUpload} from './gallery-upload.js';
 import {createPhotoGallery} from './photo-gallery.js';
 import {articleCountryCodes} from './international-places.js';
@@ -15,12 +16,15 @@ let published=structuredClone(defaultContent);
 let revision=0;
 let owner=false;
 let photoGallery;
+let destinationCard;
 let galleryUpload;
 let publishing=false;
 const locallyKnownAlbums=new Set();
 function refreshGallery(){
   const memories=published.memories.filter(m=>(pageSection==='vietnam'?m.country==='VN':m.country!=='VN')&&countryInContinent(m.country,selectedContinent)&&memoryInVietnamRegion(m,selectedVietnamRegion));
   photoGallery.update(memories);
+  const articles=siteArticles.filter(a=>!published.memories.some(m=>m.id===jakartaDraft.id)&&countryInContinent(a.country,selectedContinent)).map(a=>({...a,date:a.id==='jakarta-2023'?'2023-08-24':'',photos:[]}));
+  destinationCard?.update([...memories.filter(m=>!m.galleryOnly),...articles]);
   document.querySelector('#my-journal')?.after(photoGallery.section);
 }
 const pageSection=document.body.dataset.section;
@@ -132,6 +136,7 @@ function downloadLegacy(){
   request.onsuccess=()=>{const db=request.result;const read=db.transaction('journal','readonly').objectStore('journal').get('state');read.onsuccess=()=>{db.close();if(!read.result){announce('Không tìm thấy bản nháp cũ trên trình duyệt này.');return;}const url=URL.createObjectURL(new Blob([JSON.stringify(read.result)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='don-du-don-ban-nhap-cu.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);announce('Đã tải bản sao lưu cũ trên trình duyệt này. Giữ tệp ở nơi riêng tư.');};read.onerror=()=>{db.close();announce('Không đọc được bản nháp cũ.');};};request.onerror=()=>announce('Không mở được kho bản nháp cũ.');
 }
 export async function mountPublishing(){
+  destinationCard=mountDestinationCard(document.querySelector('#international-place-directory'),{onOpen:viewMemory});
   photoGallery=createPhotoGallery();document.querySelector('#about').before(photoGallery.section);
   galleryUpload=createGalleryUpload({section:pageSection,onPublish:async memory=>{
     if(!owner)throw new Error('Bạn cần đăng nhập bằng tài khoản chủ website.');

@@ -77,13 +77,7 @@ function appendRegionArea(box,feature){
   box.append(area,label);
 }
 function highlightDestination(){
-  document.querySelectorAll('[data-destination-country]').forEach(group=>{
-    group.classList.toggle('is-selected',group.dataset.destinationCountry===selectedCode);
-    group.querySelectorAll('[data-international-place]').forEach(button=>{
-      if(button.dataset.internationalPlace===selectedPlace?.id)button.setAttribute('aria-current','location');
-      else button.removeAttribute('aria-current');
-    });
-  });
+ window.dispatchEvent(new CustomEvent('map:destination',{detail:selectedCode?{code:selectedCode,name:selectedPlace?.name||selectedRegion?.properties.name||null,visited:visited.has(selectedCode)}:null}));
 }
 function showInternationalRegion(feature,fly=true){
   if(!regionHasVisit(feature,visited))return;
@@ -101,7 +95,7 @@ function showInternationalRegion(feature,fly=true){
   document.querySelector('#international-region-select').value=p.regionId;
   if(viewMode==='globe'){
     if(fly)globe?.focusRegion(feature);
-    document.querySelector('#globe-country-content').replaceChildren(box);document.querySelector('#globe-country-panel').hidden=false;
+    document.querySelector('#globe-country-content').replaceChildren(box);document.querySelector('#globe-country-panel').hidden=Boolean(document.querySelector('.destination-feature'));
   }else{
     if(fly)map.fitBounds(L.geoJSON(feature).getBounds(),{padding:[40,40],maxZoom:8,animate:false});
     L.popup({maxWidth:250}).setLatLng(p.center).setContent(box).openOn(map);
@@ -147,7 +141,7 @@ function showInternationalPlace(id,fly=true) {
   if(viewMode==='globe') {
     if(fly)globe?.focusPlace(place);
     document.querySelector('#globe-country-content').replaceChildren(box);
-    document.querySelector('#globe-country-panel').hidden=false;
+    document.querySelector('#globe-country-panel').hidden=Boolean(document.querySelector('.destination-feature'));
   } else {
     if(fly){if(boundary)map.fitBounds(boundary.properties.bounds,{padding:[40,40],maxZoom:12,animate:false});else map.setView([place.lat,place.lng],7,{animate:false});}
     L.popup({maxWidth:250}).setLatLng([place.lat,place.lng]).setContent(box).openOn(map);
@@ -163,7 +157,7 @@ function showCountry(code,fly=true) {
   if(viewMode==='globe') {
     if(fly)globe?.focus(code);
     document.querySelector('#globe-country-content').replaceChildren(popup(code));
-    document.querySelector('#globe-country-panel').hidden=false;return;
+    document.querySelector('#globe-country-panel').hidden=Boolean(document.querySelector('.destination-feature'));return;
   }
   const position=locations[code].latlng;
   if(fly){const regions=visitedRegions(internationalRegions,visited).filter(f=>f.properties.code===code);if(regions.length)map.fitBounds(L.geoJSON({type:'FeatureCollection',features:regions}).getBounds(),{padding:[40,40],maxZoom:12,animate:false});else map.setView(position,Math.max(map.getZoom(),3),{animate:false});}
